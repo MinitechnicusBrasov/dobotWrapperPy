@@ -36,7 +36,7 @@ class Dobot:
         self.dobotApiInterface._set_ptp_coordinate_params(velocity, acceleration)
 
     def wait(self, ms: int) -> None:
-        self.dobotApiInterface._set_wait_cmd(ms)
+        self.dobotApiInterface.set_wait_cmd(ms)
 
     def pose(self) -> Tuple[float, float, float, float, float, float, float, float]:
         response = self.dobotApiInterface._get_pose()

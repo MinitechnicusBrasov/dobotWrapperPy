@@ -42,13 +42,13 @@ class DobotApi(threading.Thread):
                 else "failed to open serial port"
             )
 
-        self._set_queued_cmd_start_exec()
-        self._set_queued_cmd_clear()
-        self._set_ptp_joint_params(200, 200, 200, 200, 200, 200, 200, 200)
-        self._set_ptp_coordinate_params(velocity=200, acceleration=200)
-        self._set_ptp_jump_params(10, 200)
-        self._set_ptp_common_params(velocity=100, acceleration=100)
-        self._get_pose()
+        self.set_queued_cmd_start_exec()
+        self.set_queued_cmd_clear()
+        self.set_ptp_joint_params(200, 200, 200, 200, 200, 200, 200, 200)
+        self.set_ptp_coordinate_params(velocity=200, acceleration=200)
+        self.set_ptp_jump_params(10, 200)
+        self.set_ptp_common_params(velocity=100, acceleration=100)
+        self.get_pose()
 
     def close(self) -> None:
         self._on = False
@@ -65,7 +65,7 @@ class DobotApi(threading.Thread):
         Gets the current command index
     """
 
-    def _get_queued_cmd_current_index(self) -> int:
+    def get_queued_cmd_current_index(self) -> int:
         msg = Message()
         msg.id = CommunicationProtocolIDs.GET_QUEUED_CMD_CURRENT_INDEX
         response = self._send_command(msg)
@@ -78,7 +78,7 @@ class DobotApi(threading.Thread):
         Gets the real-time pose of the Dobot
     """
 
-    def _get_pose(self) -> Message:
+    def get_pose(self) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.GET_POSE
         response = self._send_command(msg)
@@ -131,7 +131,7 @@ class DobotApi(threading.Thread):
             print("pydobot: waiting for command", expected_idx)
 
         while True:
-            current_idx = self._get_queued_cmd_current_index()
+            current_idx = self.get_queued_cmd_current_index()
 
             if current_idx != expected_idx:
                 time.sleep(0.1)
@@ -153,7 +153,7 @@ class DobotApi(threading.Thread):
         Executes the CP Command
     """
 
-    def _set_cp_cmd(self, x: float, y: float, z: float) -> Message:
+    def set_cp_cmd(self, x: float, y: float, z: float) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_CP_CMD
         msg.ctrl = ControlValues.Both
@@ -172,7 +172,7 @@ class DobotApi(threading.Thread):
         Sets the status of the gripper
     """
 
-    def _set_end_effector_gripper(self, enable: bool = False) -> Message:
+    def set_end_effector_gripper(self, enable: bool = False) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_GET_END_EFFECTOR_GRIPPER
         msg.ctrl = ControlValues.Both
@@ -191,7 +191,7 @@ class DobotApi(threading.Thread):
         Sets the status of the suction cup
     """
 
-    def _set_end_effector_suction_cup(self, enable: bool = False) -> Message:
+    def set_end_effector_suction_cup(self, enable: bool = False) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_GET_END_EFFECTOR_SUCTION_CUP
         msg.ctrl = ControlValues.Both
@@ -210,7 +210,7 @@ class DobotApi(threading.Thread):
         Sets the velocity ratio and the acceleration ratio in PTP mode
     """
 
-    def _set_ptp_joint_params(
+    def set_ptp_joint_params(
         self,
         v_x: float,
         v_y: float,
@@ -242,7 +242,7 @@ class DobotApi(threading.Thread):
         Sets the velocity and acceleration of the Cartesian coordinate axes in PTP mode
     """
 
-    def _set_ptp_coordinate_params(
+    def set_ptp_coordinate_params(
         self, velocity: float, acceleration: float
     ) -> Message:
         msg = Message()
@@ -262,7 +262,7 @@ class DobotApi(threading.Thread):
        Sets the lifting height and the maximum lifting height in JUMP mode
     """
 
-    def _set_ptp_jump_params(self, jump: float, limit: float) -> Message:
+    def set_ptp_jump_params(self, jump: float, limit: float) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_GET_PTP_JUMP_PARAMS
         msg.ctrl = ControlValues.Both
@@ -278,7 +278,7 @@ class DobotApi(threading.Thread):
         Sets the velocity ratio, acceleration ratio in PTP mode
     """
 
-    def _set_ptp_common_params(self, velocity: float, acceleration: float) -> Message:
+    def set_ptp_common_params(self, velocity: float, acceleration: float) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_GET_PTP_COMMON_PARAMS
         msg.ctrl = ControlValues.Both
@@ -294,7 +294,7 @@ class DobotApi(threading.Thread):
         Executes PTP command
     """
 
-    def _set_ptp_cmd(
+    def set_ptp_cmd(
         self, x: float, y: float, z: float, r: float, mode: PTPMode, wait: bool
     ) -> Message:
         msg = Message()
@@ -315,7 +315,7 @@ class DobotApi(threading.Thread):
         Clears command queue
     """
 
-    def _set_queued_cmd_clear(self) -> Message:
+    def set_queued_cmd_clear(self) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_QUEUED_CMD_CLEAR
         msg.ctrl = ControlValues.ReadWrite
@@ -328,7 +328,7 @@ class DobotApi(threading.Thread):
         Start command
     """
 
-    def _set_queued_cmd_start_exec(self) -> Message:
+    def set_queued_cmd_start_exec(self) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_QUEUED_CMD_START_EXEC
         msg.ctrl = ControlValues.ReadWrite
@@ -341,7 +341,7 @@ class DobotApi(threading.Thread):
         Wait command
     """
 
-    def _set_wait_cmd(self, ms: int) -> Message:
+    def set_wait_cmd(self, ms: int) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_WAIT_CMD
         msg.ctrl = ControlValues.Both
@@ -355,7 +355,7 @@ class DobotApi(threading.Thread):
         Stop command
     """
 
-    def _set_queued_cmd_stop_exec(self) -> Message:
+    def set_queued_cmd_stop_exec(self) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_QUEUED_CMD_STOP_EXEC
         msg.ctrl = ControlValues.ReadWrite
@@ -364,7 +364,7 @@ class DobotApi(threading.Thread):
             raise TypeError("Response is none but shouldn't be")
         return response
 
-    def _get_eio_level(self, address: int) -> Message:
+    def get_eio_level(self, address: int) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_GET_EIO
         msg.ctrl = ControlValues.Zero
@@ -375,7 +375,7 @@ class DobotApi(threading.Thread):
             raise TypeError("Response is none but shouldn't be")
         return response
 
-    def _set_eio_level(self, address: int, level: int) -> Message:
+    def set_eio_level(self, address: int, level: int) -> Message:
         msg = Message()
         msg.id = CommunicationProtocolIDs.SET_GET_EIO
         raise TypeError("Not implemented")
