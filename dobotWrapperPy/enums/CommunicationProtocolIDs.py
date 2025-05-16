@@ -29,6 +29,7 @@ class CommunicationProtocolIDs(Enum):
     SET_PTP_CMD = 84
     SET_CP_CMD = 91
     SET_GET_EIO = 131
+    SET_WAIT_CMD = 110
     SET_QUEUED_CMD_START_EXEC = 240
     SET_QUEUED_CMD_STOP_EXEC = 241
     SET_QUEUED_CMD_CLEAR = 245
