@@ -21,25 +21,23 @@ class Dobot:
     def move_to(
         self, x: float, y: float, z: float, r: float, wait: bool = False
     ) -> None:
-        self.dobotApiInterface._set_ptp_cmd(
-            x, y, z, r, mode=PTPMode.MOVL_XYZ, wait=wait
-        )
+        self.dobotApiInterface.set_ptp_cmd(x, y, z, r, mode=PTPMode.MOVL_XYZ, wait=wait)
 
     def suck(self, enable: bool) -> None:
-        self.dobotApiInterface._set_end_effector_suction_cup(enable)
+        self.dobotApiInterface.set_end_effector_suction_cup(enable)
 
     def grip(self, enable: bool) -> None:
-        self.dobotApiInterface._set_end_effector_gripper(enable)
+        self.dobotApiInterface.set_end_effector_gripper(enable)
 
     def speed(self, velocity: float = 100.0, acceleration: float = 100.0) -> None:
-        self.dobotApiInterface._set_ptp_common_params(velocity, acceleration)
-        self.dobotApiInterface._set_ptp_coordinate_params(velocity, acceleration)
+        self.dobotApiInterface.set_ptp_common_params(velocity, acceleration)
+        self.dobotApiInterface.set_ptp_coordinate_params(velocity, acceleration)
 
     def wait(self, ms: int) -> None:
         self.dobotApiInterface.set_wait_cmd(ms)
 
     def pose(self) -> Tuple[float, float, float, float, float, float, float, float]:
-        response = self.dobotApiInterface._get_pose()
+        response = self.dobotApiInterface.get_pose()
         x = struct.unpack_from("f", response.params, 0)[0]
         y = struct.unpack_from("f", response.params, 4)[0]
         z = struct.unpack_from("f", response.params, 8)[0]
@@ -50,7 +48,7 @@ class Dobot:
         j4 = struct.unpack_from("f", response.params, 28)[0]
         return x, y, z, r, j1, j2, j3, j4
 
-    #TODO: Implement eio
+    # TODO: Implement eio
 
     # def get_eio(self, addr):
     #     return self._get_eio_level(addr)
