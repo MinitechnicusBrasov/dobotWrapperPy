@@ -2,6 +2,7 @@ Python library for Dobot Magician
 ===
 
 Based on Communication Protocol V1.1.5 (_latest version [here](https://www.dobot.cc/downloadcenter.html?sub_cat=72#sub-download)_)
+
 A Fork of Github Repo: [here](https://github.com/luismesas/pydobot?tab=readme-ov-file)
 
 
