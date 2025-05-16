@@ -385,4 +385,3 @@ class DobotApi(threading.Thread):
         msg.params.extend(bytearray([address]))
         msg.params.extend(bytearray([level]))
         return self._send_command(msg)
-
