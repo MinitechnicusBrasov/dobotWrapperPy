@@ -1,4 +1,5 @@
 from .dobotapi import DobotApi
+from .dobotConnection import DobotConnection
 import warnings
 import struct
 from .enums.ptpMode import PTPMode
@@ -9,7 +10,8 @@ class Dobot:
     dobotApiInterface: DobotApi
 
     def __init__(self, port: str, verbose: bool = False):
-        self.dobotApiInterface = DobotApi(port, verbose)
+        conn = DobotConnection(port=port)
+        self.dobotApiInterface = DobotApi(conn, verbose)
 
     def __del__(self) -> None:
         del self.dobotApiInterface
