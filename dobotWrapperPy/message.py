@@ -1,6 +1,7 @@
 from typing import Optional
 from .enums.ControlValues import ControlValues
 from .enums.CommunicationProtocolIDs import CommunicationProtocolIDs
+import warnings
 
 
 class Message:
@@ -44,19 +45,51 @@ class Message:
         return ret.upper()
 
     def refresh(self) -> None:
-        self.ctrl = self.ctrl
-        self.id = self.id
-        if self.checksum is None:
-            self.checksum = self.id.value + self.ctrl.value
-            for i in range(len(self.params)):
-                if isinstance(self.params[i], int):
-                    self.checksum += self.params[i]
-                else:
-                    raise TypeError(f"Param: {self.params[i]} is not an int")
-            self.checksum = self.checksum % 256
-            self.checksum = 2**8 - self.checksum
-            self.checksum = self.checksum % 255  #!TODO verify this
-            self.len = 0x02 + len(self.params)
+
+        # if self.checksum is not None:
+        #     warnings.warn("Checksum not recalculated")
+        #     return
+
+        if not all(isinstance(p, int) for p in self.params):
+            raise TypeError("All params must be integers")
+
+        total = self.id.value + self.ctrl.value + sum(self.params)
+        total %= 256
+
+        self.checksum = (256 - total) % 255
+
+        self.len = 0x02 + len(self.params)
+
+        # self.ctrl = self.ctrl
+        # self.id = self.id
+        # if self.checksum is None:
+        #     self.checksum = self.id.value + self.ctrl.value
+        #     for i in range(len(self.params)):
+        #         if isinstance(self.params[i], int):
+        #             self.checksum += self.params[i]
+        #         else:
+        #             raise TypeError(f"Param: {self.params[i]} is not an int")
+        #     self.checksum = self.checksum % 256
+        #     self.checksum = 2**8 - self.checksum
+        #     self.checksum = self.checksum % 255  #!TODO verify this
+        #     self.len = 0x02 + len(self.params)
+
+    """
+    Verifies whether the stored checksum is valid for the current ID, CTRL, and parameters.
+    Returns:
+        bool: True if checksum is valid, False otherwise.
+    """
+
+    def verify_checksum(self) -> bool:
+
+        if not all(isinstance(p, int) for p in self.params):
+            raise TypeError("All params must be integers")
+
+        total = self.id.value + self.ctrl.value + sum(self.params)
+        total %= 256
+        expected_checksum = (256 - total) % 255
+
+        return self.checksum == expected_checksum
 
     def bytes(self) -> bytes:
         self.refresh()
