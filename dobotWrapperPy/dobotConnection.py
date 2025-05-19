@@ -8,7 +8,7 @@ class DobotConnection:
     serial_conn: serial.Serial
 
     def __init__(
-        self, port: Optional[None] = None, serial_conn: Optional[serial.Serial] = None
+        self, port: Optional[str] = None, serial_conn: Optional[serial.Serial] = None
     ):
         if port is None and serial_conn is None:
             raise TypeError(
@@ -16,7 +16,7 @@ class DobotConnection:
             )
 
         if serial_conn is None:
-            self.serial_conn = serial.Serial(
+            serial_conn = serial.Serial(
                 port,
                 baudrate=115200,
                 parity=serial.PARITY_NONE,
