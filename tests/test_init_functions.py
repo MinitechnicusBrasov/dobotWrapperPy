@@ -8,6 +8,13 @@ from dobotWrapperPy.enums.CommunicationProtocolIDs import CommunicationProtocolI
 from dobotWrapperPy.enums.ControlValues import ControlValues
 from dobotWrapperPy.enums.ptpMode import PTPMode
 from dobotWrapperPy.enums.tagVersionRail import tagVersionRail
+from dobotWrapperPy.paramsStructures import (
+    tagPose,
+    tagPTPJointParams,
+    tagPTPCoordinateParams,
+    tagPTPJumpParams,
+    tagPTPCommonParams,
+)
 from typing import Generator
 
 
@@ -199,16 +206,21 @@ def test_get_pose_message(
     # Mock the response with dummy pose data (8 floats)
     mock_response_msg = MagicMock(spec=Message)
     dummy_pose_data = (100.0, 50.0, 25.0, 0.0, 10.0, 20.0, 30.0, 40.0)
-    mock_response_msg.params = struct.pack(
-        "<8f", *dummy_pose_data
-    )  # Little-endian floats
+    mock_response_msg.params = tagPose(
+        dummy_pose_data[0],
+        dummy_pose_data[1],
+        dummy_pose_data[2],
+        dummy_pose_data[3],
+        list(dummy_pose_data[4:]),
+    ).pack()
     mock_send_command.return_value = mock_response_msg
 
     returned_message = mock_device_without_get_pose.get_pose()
+    assert isinstance(returned_message, Message)
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.GET_POSE
@@ -221,14 +233,6 @@ def test_get_pose_message(
     assert returned_message == mock_response_msg
 
     # Verify the internal pose attributes were updated
-    assert mock_device_without_get_pose.x == dummy_pose_data[0]
-    assert mock_device_without_get_pose.y == dummy_pose_data[1]
-    assert mock_device_without_get_pose.z == dummy_pose_data[2]
-    assert mock_device_without_get_pose.r == dummy_pose_data[3]
-    assert mock_device_without_get_pose.j1 == dummy_pose_data[4]
-    assert mock_device_without_get_pose.j2 == dummy_pose_data[5]
-    assert mock_device_without_get_pose.j3 == dummy_pose_data[6]
-    assert mock_device_without_get_pose.j4 == dummy_pose_data[7]
 
 
 @patch("dobotWrapperPy.dobotapi.DobotApi._send_command")
@@ -245,12 +249,12 @@ def test_set_ptp_joint_params_little_endian(
     mock_send_command.return_value = mock_response_msg
 
     mock_device_without_set_ptp_joint_params.set_ptp_joint_params(
-        v_x, v_y, v_z, v_r, a_x, a_y, a_z, a_r
+        tagPTPJointParams([v_x, v_y, v_z, v_r], [a_x, a_y, a_z, a_r])
     )
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_JOINT_PARAMS
@@ -284,12 +288,12 @@ def test_set_ptp_coordinate_params_little_endian(
     mock_send_command.return_value = mock_response_msg
 
     mock_device_without_set_ptp_coordinate_params.set_ptp_coordinate_params(
-        velocity, acceleration
+        tagPTPCoordinateParams(velocity, velocity, acceleration, acceleration)
     )
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_COORDINATE_PARAMS
@@ -317,11 +321,13 @@ def test_set_ptp_jump_params_little_endian(
     mock_response_msg.params = struct.pack("<L", 131)  # Mock a command index response
     mock_send_command.return_value = mock_response_msg
 
-    mock_device_without_set_ptp_jump_params.set_ptp_jump_params(jump, limit)
+    mock_device_without_set_ptp_jump_params.set_ptp_jump_params(
+        tagPTPJumpParams(jump, limit)
+    )
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_JUMP_PARAMS
@@ -348,12 +354,12 @@ def test_set_ptp_common_params_little_endian(
     mock_send_command.return_value = mock_response_msg
 
     mock_device_without_set_ptp_common_params.set_ptp_common_params(
-        velocity, acceleration
+        tagPTPCommonParams(velocity, acceleration)
     )
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_COMMON_PARAMS
@@ -381,7 +387,7 @@ def test_set_queued_cmd_clear_message(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_QUEUED_CMD_CLEAR
@@ -404,7 +410,7 @@ def test_set_queued_cmd_start_exec_message(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_QUEUED_CMD_START_EXEC

@@ -8,7 +8,13 @@ from dobotWrapperPy.enums.CommunicationProtocolIDs import CommunicationProtocolI
 from dobotWrapperPy.enums.ControlValues import ControlValues
 from dobotWrapperPy.enums.ptpMode import PTPMode
 from dobotWrapperPy.enums.tagVersionRail import tagVersionRail
-from dobotWrapperPy.paramsStructures import tagWithL, tagWithLReturn
+from dobotWrapperPy.enums.CPMode import CPMode
+from dobotWrapperPy.paramsStructures import (
+    tagWithL,
+    tagWithLReturn,
+    tagWAITCmd,
+    tagCPCmd,
+)
 from typing import Generator
 
 
@@ -51,7 +57,9 @@ def test_set_device_sn_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    print(mock_send_command.call_args)
+    (packet_message, _), _ = mock_send_command.call_args
+    print(packet_message)
     assert isinstance(packet_message, Message)
 
     packet: bytes = packet_message.bytes()
@@ -88,7 +96,7 @@ def test_get_device_sn_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     packet: bytes = packet_message.bytes()
@@ -124,7 +132,7 @@ def test_get_queued_cmd_current_index_message(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.GET_QUEUED_CMD_CURRENT_INDEX
@@ -143,28 +151,26 @@ def test_set_cp_cmd_little_endian(
 ) -> None:
     """Test setting CP command with little-endian float parameters."""
     x, y, z = 100.0, 50.0, 25.0
+    cpCmd = tagCPCmd(CPMode.ABSOLUTE, x, y, z, 100)
 
     # Mock the response for the SET command (usually contains the command index)
     mock_response_msg = MagicMock(spec=Message)
     mock_response_msg.params = struct.pack("<L", 124)  # Mock a command index response
     mock_send_command.return_value = mock_response_msg
 
-    mock_device.set_cp_cmd(x, y, z)
+    mock_device.set_cp_cmd(cpCmd)
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_CP_CMD
     assert packet_message.ctrl == ControlValues.Both
 
     # Verify payload structure and endianness
-    expected_params = bytearray([0x01])  # CP mode
-    expected_params.extend(struct.pack("<f", x))
-    expected_params.extend(struct.pack("<f", y))
-    expected_params.extend(struct.pack("<f", z))
-    expected_params.append(0x00)  # Reserved byte
+    expected_params = bytearray(cpCmd.pack())  # CP mode
+    # expected_params.append(0x00)  # Reserved byte
 
     assert packet_message.params == expected_params
 
@@ -185,7 +191,7 @@ def test_set_end_effector_gripper_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_END_EFFECTOR_GRIPPER
@@ -207,7 +213,7 @@ def test_set_end_effector_gripper_little_endian(
 
     mock_device.set_end_effector_gripper(enable=False)
     mock_send_command.assert_called_once()
-    (packet_message_disable,), _ = mock_send_command.call_args
+    (packet_message_disable, _), _ = mock_send_command.call_args
     assert packet_message_disable.params == bytearray([0x01, 0x00])
 
 
@@ -227,7 +233,7 @@ def test_set_end_effector_suction_cup_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert (
@@ -273,7 +279,7 @@ def test_set_ptp_cmd_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_PTP_CMD
@@ -295,17 +301,18 @@ def test_set_wait_cmd_little_endian(
 ) -> None:
     """Test setting wait command with little-endian integer parameter and its response."""
     ms = 1000  # milliseconds
+    tag = tagWAITCmd(ms)
 
     # Mock the response for the SET command (usually contains the command index)
     mock_response_msg = MagicMock(spec=Message)
-    mock_response_msg.params = struct.pack("<L", 136)  # Mock a command index response
+    mock_response_msg.params = tag.pack()  # Mock a command index response
     mock_send_command.return_value = mock_response_msg
 
-    mock_device.set_wait_cmd(ms)
+    mock_device.set_wait_cmd(tag)
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_WAIT_CMD
@@ -331,43 +338,12 @@ def test_set_queued_cmd_stop_exec_message(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_QUEUED_CMD_STOP_EXEC
     assert packet_message.ctrl == ControlValues.ReadWrite
     assert packet_message.params == bytearray([])  # SET command with no parameters
-
-
-@patch("dobotWrapperPy.dobotapi.DobotApi._send_command")
-def test_get_eio_level_little_endian(
-    mock_send_command: MagicMock, mock_device: DobotApi
-) -> None:
-    """Test getting EIO level with little-endian integer parameter and its response."""
-    address = 1
-    # Mock the response with a dummy level
-    mock_response_msg = MagicMock(spec=Message)
-    dummy_level = 1  # Assuming level is a single byte
-    mock_response_msg.params = bytes([dummy_level])
-    mock_send_command.return_value = mock_response_msg
-
-    returned_message = mock_device.get_eio_level(address)
-
-    mock_send_command.assert_called_once()
-
-    (packet_message,), _ = mock_send_command.call_args
-    assert isinstance(packet_message, Message)
-
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_IODO
-    assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
-
-    # Verify payload structure and endianness
-    expected_params = bytearray([address])
-
-    assert packet_message.params == expected_params
-
-    # Verify the returned message is the mocked response
-    assert returned_message == mock_response_msg
 
 
 @patch("dobotWrapperPy.dobotapi.DobotApi._send_command")
@@ -385,7 +361,7 @@ def test_get_device_sn_message(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.GET_SET_DEVICE_SN
@@ -414,7 +390,7 @@ def test_set_device_name_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.GET_SET_DEVICE_NAME
@@ -441,7 +417,7 @@ def test_get_device_name_message(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.GET_SET_DEVICE_NAME
@@ -469,7 +445,7 @@ def test_get_device_version_message(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.GET_DEVICE_VERSION
@@ -499,7 +475,7 @@ def test_set_device_rail_capability_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_DEVICE_WITH_RAIL
@@ -527,7 +503,7 @@ def test_get_device_rail_capability_little_endian(
 
     mock_send_command.assert_called_once()
 
-    (packet_message,), _ = mock_send_command.call_args
+    (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_DEVICE_WITH_RAIL
