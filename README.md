@@ -3,7 +3,7 @@ Python library for Dobot Magician
 
 Based on Communication Protocol V1.1.5 (_latest version [here](https://www.dobot.cc/downloadcenter.html?sub_cat=72#sub-download)_)
 
-A Fork of Github Repo: [here](https://github.com/luismesas/pydobot?tab=readme-ov-file)
+This is a Fork of Github Repo: [here](https://github.com/luismesas/pydobot?tab=readme-ov-file)
 
 
 Installation
@@ -21,13 +21,13 @@ Example
 ```python
 from serial.tools import list_ports
 
-import pydobot
+import dobotWrapperPy
 
 available_ports = list_ports.comports()
 print(f'available ports: {[x.device for x in available_ports]}')
 port = available_ports[0].device
 
-device = pydobot.Dobot(port=port, verbose=True)
+device = dobotWrapperPy.Dobot(port=port, verbose=True)
 
 (x, y, z, r, j1, j2, j3, j4) = device.pose()
 print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
