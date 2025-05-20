@@ -99,7 +99,8 @@ class DobotApi(threading.Thread):
         self.lock.acquire()
         if self.verbose:
             print("pydobot: %s closed" % self.conn.serial_conn.name)
-        del self.conn
+        if hasattr(self, "conn") and self.conn is not None:
+            del self.conn
         self.lock.release()
 
     def __del__(self) -> None:
