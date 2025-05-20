@@ -21,7 +21,8 @@ class Dobot:
         self.dobotApiInterface = DobotApi(conn, verbose)
 
     def __del__(self) -> None:
-        del self.dobotApiInterface
+        if hasattr(self, "dobotApiInterface") and self.dobotApiInterface is not None:
+            del self.dobotApiInterface
 
     def go(self, x: float, y: float, z: float, r: float = 0.0) -> None:
         warnings.warn("go() is deprecated, use move_to() instead")
