@@ -3,6 +3,13 @@ from .dobotConnection import DobotConnection
 import warnings
 import struct
 from .enums.ptpMode import PTPMode
+from .message import Message
+from .paramsStructures import (
+    tagPTPCommonParams,
+    tagPTPCoordinateParams,
+    tagWAITCmd,
+    tagPose,
+)
 from typing import Tuple
 
 
@@ -32,28 +39,28 @@ class Dobot:
         self.dobotApiInterface.set_end_effector_gripper(enable)
 
     def speed(self, velocity: float = 100.0, acceleration: float = 100.0) -> None:
-        self.dobotApiInterface.set_ptp_common_params(velocity, acceleration)
-        self.dobotApiInterface.set_ptp_coordinate_params(velocity, acceleration)
+        self.dobotApiInterface.set_ptp_common_params(
+            tagPTPCommonParams(velocity, acceleration)
+        )
+        self.dobotApiInterface.set_ptp_coordinate_params(
+            tagPTPCoordinateParams(velocity, velocity, acceleration, acceleration)
+        )
 
     def wait(self, ms: int) -> None:
-        self.dobotApiInterface.set_wait_cmd(ms)
+        self.dobotApiInterface.set_wait_cmd(tagWAITCmd(ms))
 
     def pose(self) -> Tuple[float, float, float, float, float, float, float, float]:
-        response = self.dobotApiInterface.get_pose()
-        x = struct.unpack_from("f", response.params, 0)[0]
-        y = struct.unpack_from("f", response.params, 4)[0]
-        z = struct.unpack_from("f", response.params, 8)[0]
-        r = struct.unpack_from("f", response.params, 12)[0]
-        j1 = struct.unpack_from("f", response.params, 16)[0]
-        j2 = struct.unpack_from("f", response.params, 20)[0]
-        j3 = struct.unpack_from("f", response.params, 24)[0]
-        j4 = struct.unpack_from("f", response.params, 28)[0]
-        return x, y, z, r, j1, j2, j3, j4
+        response: Message = self.dobotApiInterface.get_pose()
+        pos = tagPose.unpack(response.bytes())
+        return (
+            pos.x,
+            pos.y,
+            pos.z,
+            pos.r,
+            pos.jointAngle[0],
+            pos.jointAngle[1],
+            pos.jointAngle[2],
+            pos.jointAngle[3],
+        )
 
     # TODO: Implement eio
-
-    # def get_eio(self, addr):
-    #     return self._get_eio_level(addr)
-    #
-    # def set_eio(self, addr, val):
-    #     return self._set_eio_level(addr, val)
