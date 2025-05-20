@@ -12,7 +12,7 @@ class Message:
     checksum: Optional[int]
     id: CommunicationProtocolIDs
 
-    def __init__(self, b: Optional[bytes] = None):
+    def __init__(self, b: Optional[bytes] = None) -> None:
         if b is None:
             self.header = bytes([0xAA, 0xAA])
             self.len = 0x00
