@@ -17,7 +17,7 @@ class Message:
             self.header = bytes([0xAA, 0xAA])
             self.len = 0x00
             self.ctrl = ControlValues.Zero
-            self.params = bytes([])
+            self.params = bytearray([])
             self.checksum = None
         else:
             self.header = b[0:2]
