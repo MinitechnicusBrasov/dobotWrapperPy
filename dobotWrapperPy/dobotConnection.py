@@ -9,7 +9,7 @@ class DobotConnection:
 
     def __init__(
         self, port: Optional[str] = None, serial_conn: Optional[serial.Serial] = None
-    ):
+    ) -> None:
         if port is None and serial_conn is None:
             raise TypeError(
                 "Please provide the constructor with port or with the serial connection"

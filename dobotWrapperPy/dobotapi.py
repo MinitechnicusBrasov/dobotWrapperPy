@@ -65,7 +65,7 @@ class DobotApi(threading.Thread):
     is_open: bool
     ctrl: ControlValues
 
-    def __init__(self, dobot_connection: DobotConnection, verbose: bool = False):
+    def __init__(self, dobot_connection: DobotConnection, verbose: bool = False) -> None:
         """
         Constructor for the DobotApi class.
 

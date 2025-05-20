@@ -16,7 +16,7 @@ from typing import Tuple
 class Dobot:
     dobotApiInterface: DobotApi
 
-    def __init__(self, port: str, verbose: bool = False):
+    def __init__(self, port: str, verbose: bool = False) -> None:
         conn = DobotConnection(port=port)
         self.dobotApiInterface = DobotApi(conn, verbose)
 
