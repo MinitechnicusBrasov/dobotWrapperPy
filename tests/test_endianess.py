@@ -257,7 +257,7 @@ def test_set_end_effector_suction_cup_little_endian(
 
     mock_device.set_end_effector_suction_cup(enable=False)
     mock_send_command.assert_called_once()
-    (packet_message_disable,), _ = mock_send_command.call_args
+    (packet_message_disable, _), _ = mock_send_command.call_args
     assert packet_message_disable.params == bytearray([0x01, 0x00])
 
 
