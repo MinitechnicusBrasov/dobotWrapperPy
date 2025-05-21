@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="dobotWrapperPy",
     packages=["dobotWrapperPy", "dobotWrapperPy.enums"],
-    package_data={"dobotWrapperPy": ["py.typed"]},
+    package_data={"dobotWrapperPy": ["py.typed"], "dobotWrapperPy.enums": ["py.typed"]},
     include_package_data=True,
     version="0.1.5",
     description="Python library for Dobot Magician For Minitechnicus Courses",
