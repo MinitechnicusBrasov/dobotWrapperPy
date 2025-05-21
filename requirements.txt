@@ -1,6 +1,0 @@
-iniconfig==2.1.0
-packaging==25.0
-pluggy==1.6.0
-pyserial==3.5
-pytest==8.3.5
-setuptools==80.8.0
