@@ -35,14 +35,14 @@ jobs:
       - name: Generate API documentation with pydoctor
         run: |
             pydoctor \
-            --project-name="${projectname}" \
+            --project-name="dobotWrapperPy" \
             --project-url="https://github.com/${GITHUB_REPOSITORY}" \
             --html-viewsource-base="https://github.com/${GITHUB_REPOSITORY}/tree/${GITHUB_SHA}" \
             --html-base-url="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}" \
             --html-output="./apidocs" \
             --docformat="restructuredtext" \
             --intersphinx="https://docs.python.org/3/objects.inv" \
-            "./${packagedirectory}"
+            ./dobotWrapperPy
 
 
       - name: Push API documentation to Github Pages
