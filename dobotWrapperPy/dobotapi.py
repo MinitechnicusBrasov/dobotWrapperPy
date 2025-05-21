@@ -65,14 +65,16 @@ class DobotApi(threading.Thread):
     is_open: bool
     ctrl: ControlValues
 
-    def __init__(self, dobot_connection: DobotConnection, verbose: bool = False) -> None:
+    def __init__(
+        self, dobot_connection: DobotConnection, verbose: bool = False
+    ) -> None:
         """
         Constructor for the DobotApi class.
 
         Args:
             dobot_connection (DobotConnection): An instance of DobotConnection
                 handling the serial communication.
-            verbose (bool): If True, enables verbose output for debugging
+            verbose: If True, enables verbose output for debugging
                 (default: False).
         """
         threading.Thread.__init__(self)
@@ -143,9 +145,9 @@ class DobotApi(threading.Thread):
             command_id (CommunicationProtocolIDs): The ID of the command to
                 send.
             control_value (ControlValues): The control value for the command.
-            params (Optional[bytes]): Optional byte string of parameters for
+            params: Optional byte string of parameters for
                 the command (default: None).
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot (default: False).
 
         Returns:
@@ -169,7 +171,7 @@ class DobotApi(threading.Thread):
         Retrieves the current index of the command queue.
 
         Returns:
-            int: The current command index.
+            The current command index (int).
         """
         response = self._send_command_with_params(
             CommunicationProtocolIDs.GET_QUEUED_CMD_CURRENT_INDEX,
@@ -218,7 +220,7 @@ class DobotApi(threading.Thread):
         Reads a message from the serial connection.
 
         Returns:
-            Optional[Message]: The received Message object, or None if no
+            The received Message object, or None if no
                 message is read.
         """
         time.sleep(0.1)
@@ -238,7 +240,7 @@ class DobotApi(threading.Thread):
 
         Args:
             msg (Message): The message object to send.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot (default: False).
 
         Returns:
@@ -293,9 +295,8 @@ class DobotApi(threading.Thread):
         specified Cartesian coordinate.
 
         Args:
-            x (float): The X-coordinate.
-            y (float): The Y-coordinate.
-            z (float): The Z-coordinate.
+            cmd (tagCPCmd): An object having the xyz coordinates,
+                the cpMode and the velocity_or_power
 
         Returns:
             Message: The response message from the Dobot.
@@ -311,7 +312,7 @@ class DobotApi(threading.Thread):
         Sets the status of the gripper (open/close).
 
         Args:
-            enable (bool): True to enable (close) the gripper, False to
+            enable: True to enable (close) the gripper, False to
                 disable (open) (default: False).
 
         Returns:
@@ -329,7 +330,7 @@ class DobotApi(threading.Thread):
         Sets the status of the suction cup (on/off).
 
         Args:
-            enable (bool): True to turn on the suction cup, False to turn off
+            enable: True to turn on the suction cup, False to turn off
                 (default: False).
 
         Returns:
@@ -413,27 +414,21 @@ class DobotApi(threading.Thread):
             params.pack(),
         )
 
-    def set_ptp_cmd(
-        self, x: float, y: float, z: float, r: float, mode: PTPMode, wait: bool
-    ) -> Message:
+    def set_ptp_cmd(self, cmd: tagPTPCmd, wait: bool) -> Message:
         """
         Executes a PTP (Point-to-Point) movement command to a specified
         Cartesian coordinate with a given mode.
 
         Args:
-            x (float): The X-coordinate.
-            y (float): The Y-coordinate.
-            z (float): The Z-coordinate.
-            r (float): The R-coordinate (rotation around Z-axis).
-            mode (PTPMode): The PTP movement mode.
-            wait (bool): If True, waits for the command to be executed by the
+            cmd (tagPTPCmd): An object that contains the xyzr values and the
+                mode of movement.
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
             Message: The response message from the Dobot.
         """
-        params = bytearray([mode.value])
-        params.extend(struct.pack("<ffff", x, y, z, r))
+        params = bytearray(cmd.pack())
         return self._send_command_with_params(
             CommunicationProtocolIDs.SET_PTP_CMD, ControlValues.Both, params, wait
         )
@@ -490,7 +485,7 @@ class DobotApi(threading.Thread):
         Sets the device serial number.
 
         Args:
-            device_serial_number (str): The serial number to set.
+            device_serial_number: The serial number to set.
 
         Returns:
             Message: The response message from the Dobot.
@@ -518,7 +513,7 @@ class DobotApi(threading.Thread):
         Sets the device name.
 
         Args:
-            device_name (str): The name to set.
+            device_name: The name to set.
 
         Returns:
             Message: The response message from the Dobot.
@@ -559,7 +554,7 @@ class DobotApi(threading.Thread):
         Sets the device's rail capability.
 
         Args:
-            enable (bool): True to enable rail capability, False to disable.
+            enable: True to enable rail capability, False to disable.
             version (tagVersionRail): The version of the rail.
 
         Returns:
@@ -613,9 +608,9 @@ class DobotApi(threading.Thread):
         Resets the real-time pose of the robot.
 
         Args:
-            manual (int): Manual reset flag.
-            rearArmAngle (float): Rear arm angle for reset.
-            frontArmAngle (float): Front arm angle for reset.
+            manual: Manual reset flag.
+            rearArmAngle: Rear arm angle for reset.
+            frontArmAngle: Front arm angle for reset.
 
         Returns:
             Message: The response message from the Dobot.
@@ -670,7 +665,7 @@ class DobotApi(threading.Thread):
         Args:
             homeParams (tagHomeParams): An object containing the homing
                 parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -700,7 +695,7 @@ class DobotApi(threading.Thread):
 
         Args:
             options (tagHomeCmd): An object containing homing command options.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -775,7 +770,7 @@ class DobotApi(threading.Thread):
         Enables or disables the Hand Hold Teaching trigger output.
 
         Args:
-            is_enabled (bool): True to enable, False to disable.
+            is_enabled: True to enable, False to disable.
 
         Returns:
             Message: The response message from the Dobot.
@@ -820,7 +815,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagEndEffectorParams): An object containing the end
                 effector parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -852,9 +847,9 @@ class DobotApi(threading.Thread):
         Controls the laser end effector.
 
         Args:
-            enable_ctrl (bool): True to enable laser control, False to disable.
-            on (bool): True to turn the laser on, False to turn it off.
-            wait (bool): If True, waits for the command to be executed by the
+            enable_ctrl: True to enable laser control, False to disable.
+            on: True to turn the laser on, False to turn it off.
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -912,7 +907,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagJOGJointParams): An object containing the JOG joint
                 parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -946,7 +941,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagJOGCoordinateParams): An object containing the JOG
                 coordinate parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -978,7 +973,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagJOGCommonParams): An object containing the common JOG
                 parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1009,7 +1004,7 @@ class DobotApi(threading.Thread):
 
         Args:
             cmd (tagJOGCmd): An object containing the JOG command.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1028,7 +1023,7 @@ class DobotApi(threading.Thread):
 
         Args:
             params (tagJOGLParams): An object containing the JOGL parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1110,7 +1105,7 @@ class DobotApi(threading.Thread):
 
         Args:
             params (tagPTPLParams): An object containing the PTPL parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1142,7 +1137,7 @@ class DobotApi(threading.Thread):
         Args:
             cmd (tagPTPWithLCmd): An object containing the PTP command with
                 rail parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1162,7 +1157,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagPTPJump2Params): An object containing the PTP jump2
                 parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1195,8 +1190,8 @@ class DobotApi(threading.Thread):
 
         Args:
             ptp_cmd (tagPTPCmd): The PTP command.
-            po_cmds (List[tagPOCmd]): A list of PO commands.
-            wait (bool): If True, waits for the command to be executed by the
+            po_cmds: A list of PO commands.
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1219,8 +1214,8 @@ class DobotApi(threading.Thread):
 
         Args:
             ptp_cmd (tagPTPWithLCmd): The PTP command with rail parameters.
-            po_cmds (List[tagPOCmd]): A list of PO commands.
-            wait (bool): If True, waits for the command to be executed by the
+            po_cmds: A list of PO commands.
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1243,7 +1238,7 @@ class DobotApi(threading.Thread):
 
         Args:
             params (tagCPParams): An object containing the CP parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1275,7 +1270,7 @@ class DobotApi(threading.Thread):
 
         Args:
             cmd (tagCPCmd): An object containing the CP command.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1298,7 +1293,7 @@ class DobotApi(threading.Thread):
 
         Args:
             arcParams (tagARCParams): An object containing the ARC parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1333,7 +1328,7 @@ class DobotApi(threading.Thread):
 
         Args:
             cmd (tagARCCmd): An object containing the ARC command.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1352,7 +1347,7 @@ class DobotApi(threading.Thread):
 
         Args:
             cmd (tagTRIGCmd): An object containing the TRIG command.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1372,7 +1367,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagIOMultiplexing): An object containing the I/O
                 multiplexing parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1403,7 +1398,7 @@ class DobotApi(threading.Thread):
 
         Args:
             params (tagIODO): An object containing the I/O DO parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1434,7 +1429,7 @@ class DobotApi(threading.Thread):
 
         Args:
             params (tagIOPWM): An object containing the I/O PWM parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1490,7 +1485,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagEMOTOR): An object containing the external motor
                 parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1510,7 +1505,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagDevice): An object containing the device (color sensor)
                 parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1542,7 +1537,7 @@ class DobotApi(threading.Thread):
         Args:
             params (tagDevice): An object containing the device (IR switch)
                 parameters.
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot.
 
         Returns:
@@ -1574,9 +1569,9 @@ class DobotApi(threading.Thread):
         Sets the static error for the angle sensors.
 
         Args:
-            rear_arm_angle_error (float): The static error for the rear arm
+            rear_arm_angle_error: The static error for the rear arm
                 angle sensor.
-            front_arm_angle_error (float): The static error for the front arm
+            front_arm_angle_error: The static error for the front arm
                 angle sensor.
 
         Returns:
@@ -1609,7 +1604,7 @@ class DobotApi(threading.Thread):
         Enables or disables Wi-Fi configuration mode.
 
         Args:
-            enable (bool): True to enable, False to disable.
+            enable: True to enable, False to disable.
 
         Returns:
             Message: The response message from the Dobot.
@@ -1638,7 +1633,7 @@ class DobotApi(threading.Thread):
         Sets the Wi-Fi SSID.
 
         Args:
-            ssid (str): The Wi-Fi SSID to set.
+            ssid: The Wi-Fi SSID to set.
 
         Returns:
             Message: The response message from the Dobot.
@@ -1667,7 +1662,7 @@ class DobotApi(threading.Thread):
         Sets the Wi-Fi password.
 
         Args:
-            password (str): The Wi-Fi password to set.
+            password: The Wi-Fi password to set.
 
         Returns:
             Message: The response message from the Dobot.
@@ -1823,7 +1818,7 @@ class DobotApi(threading.Thread):
         Sets parameters related to losing-step detection.
 
         Args:
-            value (float): The value for lost step parameters.
+            value: The value for lost step parameters.
 
         Returns:
             Message: The response message from the Dobot.
@@ -1840,7 +1835,7 @@ class DobotApi(threading.Thread):
         Executes a losing-step detection command.
 
         Args:
-            wait (bool): If True, waits for the command to be executed by the
+            wait: If True, waits for the command to be executed by the
                 robot (default: False).
 
         Returns:
@@ -1869,8 +1864,8 @@ class DobotApi(threading.Thread):
         Starts downloading commands to the queue.
 
         Args:
-            total_loop (int): Total number of loops for command download.
-            line_per_loop (int): Number of lines per loop for command
+            total_loop: Total number of loops for command download.
+            line_per_loop: Number of lines per loop for command
                 download.
 
         Returns:
