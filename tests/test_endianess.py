@@ -14,6 +14,7 @@ from dobotWrapperPy.paramsStructures import (
     tagWithLReturn,
     tagWAITCmd,
     tagCPCmd,
+    tagPTPCmd,
 )
 from typing import Generator
 
@@ -275,7 +276,7 @@ def test_set_ptp_cmd_little_endian(
     mock_response_msg.params = struct.pack("<L", 133)  # Mock a command index response
     mock_send_command.return_value = mock_response_msg
 
-    mock_device.set_ptp_cmd(x, y, z, r, mode, wait)
+    mock_device.set_ptp_cmd(tagPTPCmd(PTPMode.MOVJ_XYZ, x, y, z, r), wait)
 
     mock_send_command.assert_called_once()
 
