@@ -46,7 +46,6 @@ jobs:
 
 
       - name: Push API documentation to Github Pages
-        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
