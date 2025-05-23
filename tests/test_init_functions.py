@@ -216,7 +216,7 @@ def test_get_pose_message(
     mock_send_command.return_value = mock_response_msg
 
     returned_message = mock_device_without_get_pose.get_pose()
-    assert isinstance(returned_message, Message)
+    assert isinstance(returned_message, tagPose)
 
     mock_send_command.assert_called_once()
 
@@ -230,7 +230,7 @@ def test_get_pose_message(
     )  # GET command should have empty params
 
     # Verify the returned message is the mocked response
-    assert returned_message == mock_response_msg
+    assert returned_message == tagPose.unpack(mock_response_msg.params)
 
     # Verify the internal pose attributes were updated
 
@@ -258,7 +258,7 @@ def test_set_ptp_joint_params_little_endian(
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_JOINT_PARAMS
-    assert packet_message.ctrl == ControlValues.Both
+    assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
     expected_params = bytearray([])
@@ -297,7 +297,7 @@ def test_set_ptp_coordinate_params_little_endian(
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_COORDINATE_PARAMS
-    assert packet_message.ctrl == ControlValues.Both
+    assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
     expected_params = bytearray([])
@@ -331,7 +331,7 @@ def test_set_ptp_jump_params_little_endian(
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_JUMP_PARAMS
-    assert packet_message.ctrl == ControlValues.Both
+    assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
     expected_params = bytearray([])
@@ -363,7 +363,7 @@ def test_set_ptp_common_params_little_endian(
     assert isinstance(packet_message, Message)
 
     assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_COMMON_PARAMS
-    assert packet_message.ctrl == ControlValues.Both
+    assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
     expected_params = bytearray([])
