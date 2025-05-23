@@ -20,6 +20,8 @@ from dobotWrapperPy.paramsStructures import (
 from typing import Generator
 from enum import Enum
 
+pytestmark = pytest.mark.skip("Skipped by default, run explicitly if needed")
+
 
 class Asker(Enum):
     YES = 0
