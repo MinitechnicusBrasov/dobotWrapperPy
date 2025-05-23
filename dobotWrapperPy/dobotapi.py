@@ -89,9 +89,9 @@ class DobotApi(threading.Thread):
         is_open = self.conn.serial_conn.isOpen()
         if self.verbose:
             print(
-                "pydobot: %s open" % self.conn.serial_conn.name
+                "dobot: %s open" % self.conn.serial_conn.name
                 if is_open
-                else "pydobot: failed to open serial port"
+                else "dobot: failed to open serial port"
             )
 
         self._initialize_robot()
@@ -118,7 +118,7 @@ class DobotApi(threading.Thread):
                     and hasattr(self.conn.serial_conn, "name")
                 ):
                     port_name = self.conn.serial_conn.name
-                print(f"pydobot: {port_name} closed")
+                print(f"dobot: {port_name} closed")
         finally:
             self.lock.release()
 
@@ -198,7 +198,7 @@ class DobotApi(threading.Thread):
             msg.params = bytearray([])
 
         if self.verbose:
-            print(f"pydobot: sending from {command_id.name}: {msg}")
+            print(f"dobot: sending from {command_id.name}: {msg}")
         return self._send_command(msg, wait)
 
     def get_queued_cmd_current_index(self) -> int:
@@ -240,7 +240,7 @@ class DobotApi(threading.Thread):
 
         if self.verbose:
             print(
-                "pydobot: x:%03.1f y:%03.1f z:%03.1f r:%03.1f j1:%03.1f j2:%03.1f j3:%03.1f j4:%03.1f"
+                "dobot: x:%03.1f y:%03.1f z:%03.1f r:%03.1f j1:%03.1f j2:%03.1f j3:%03.1f j4:%03.1f"
                 % (
                     unpacked_response.x,
                     unpacked_response.y,
@@ -266,7 +266,7 @@ class DobotApi(threading.Thread):
         if len(byte_buffer) > 0:
             msg = Message(byte_buffer)
             if self.verbose:
-                print("pydobot: <<", msg)
+                print("dobot: <<", msg)
             return msg
         return None
 
@@ -323,7 +323,7 @@ class DobotApi(threading.Thread):
         expected_idx = struct.unpack_from("<Q", response.params, 0)[0]
         if self.verbose:
             print(
-                f"pydobot: waiting for command index {expected_idx} (sent {msg.id.name})"
+                f"dobot: waiting for command index {expected_idx} (sent {msg.id.name})"
             )
 
         wait_timeout_seconds = 10  # Max time to wait for a single command execution
@@ -350,7 +350,7 @@ class DobotApi(threading.Thread):
             if current_idx >= expected_idx:
                 if self.verbose:
                     print(
-                        f"pydobot: command {expected_idx} ({msg.id.name}) executed (current index: {current_idx})."
+                        f"dobot: command {expected_idx} ({msg.id.name}) executed (current index: {current_idx})."
                     )
                 break
             time.sleep(0.1)  # Polling interval for current index
@@ -366,7 +366,7 @@ class DobotApi(threading.Thread):
         """
         time.sleep(0.05)  # Short delay before writing
         if self.verbose:
-            print("pydobot: >>", msg)
+            print("dobot: >>", msg)
         self.conn.serial_conn.write(msg.bytes())
 
     def set_cp_cmd(
@@ -884,17 +884,17 @@ class DobotApi(threading.Thread):
             raise ValueError("Invalid response for GetPoseRail: insufficient data")
         pose_l: float = struct.unpack_from("<f", response.params)[0]
         if self.verbose:
-            print(f"pydobot: l:{pose_l}")
+            print(f"dobot: l:{pose_l}")
         return pose_l
 
-        def get_active_alarms(self) -> Set[Alarm]:
-            """
-            Gets the current active alarms of the Dobot. Immediate command.
-            Protocol ID: 20.
+    def get_active_alarms(self) -> Set[Alarm]:
+        """
+        Gets the current active alarms of the Dobot. Immediate command.
+        Protocol ID: 20.
 
-            Returns:
-                A set of Alarm enum members representing the active alarms.
-            """
+        Returns:
+            A set of Alarm enum members representing the active alarms.
+        """
 
         response = self._send_command_with_params(
             CommunicationProtocolIDs.GET_ALARMS_STATE_OR_CLEAR_ALARM,  # ID 20
@@ -905,16 +905,19 @@ class DobotApi(threading.Thread):
             raise ValueError("Invalid response for GetAlarmsState: insufficient data")
 
         active_alarms: Set[Alarm] = set()
+
         for idx in range(16):
             alarm_byte = struct.unpack_from("B", response.params, idx)[0]
             for i in range(alarm_byte.bit_length()):
                 if (alarm_byte >> i) & 1:
                     alarm_index = idx * 8 + i
                     try:
+                        print(int(alarm_index))
                         alarm = Alarm(alarm_index)
                         active_alarms.add(alarm)
                     except ValueError:
                         print(f"Warning: Unknown alarm code: {alarm_index}")
+
         return active_alarms
 
     def clear_all_alarms_state(self) -> None:
@@ -2151,7 +2154,7 @@ class DobotApi(threading.Thread):
 
         if self.verbose:
             print(
-                f"pydobot: get_io_adc for requested_address={address}, response_address={response_address}, value={value}"
+                f"dobot: get_io_adc for requested_address={address}, response_address={response_address}, value={value}"
             )
             if response_address != address:
                 warnings.warn(
