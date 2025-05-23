@@ -3,13 +3,14 @@ import struct
 import threading
 import time
 import warnings
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Set
 from .enums.level import Level
 from .dobotConnection import DobotConnection
 from .enums.CommunicationProtocolIDs import CommunicationProtocolIDs
 from .enums.ControlValues import ControlValues
 from .enums.HHTTrigMode import HHTTrigMode
 from .enums.ptpMode import PTPMode
+from .enums.alarm import Alarm
 
 # Unused import: tagVersionRail - kept as per original
 # from .enums.tagVersionRail import tagVersionRail
@@ -886,14 +887,15 @@ class DobotApi(threading.Thread):
             print(f"pydobot: l:{pose_l}")
         return pose_l
 
-    def get_alarms_state(self) -> List[int]:
-        """
-        Gets the current alarm state of the Dobot. Immediate command.
-        Protocol ID: 20.
+        def get_active_alarms(self) -> Set[Alarm]:
+            """
+            Gets the current active alarms of the Dobot. Immediate command.
+            Protocol ID: 20.
 
-        Returns:
-            List of 16 bytes representing alarm states.
-        """
+            Returns:
+                A set of Alarm enum members representing the active alarms.
+            """
+
         response = self._send_command_with_params(
             CommunicationProtocolIDs.GET_ALARMS_STATE_OR_CLEAR_ALARM,  # ID 20
             ControlValues.Zero,  # For Get: rw=0, isQueued=0
@@ -901,7 +903,19 @@ class DobotApi(threading.Thread):
         # Expected format: uint8_t[16] alarmsState
         if len(response.params) < 16:
             raise ValueError("Invalid response for GetAlarmsState: insufficient data")
-        return list(struct.unpack_from("<16B", response.params))
+
+        active_alarms: Set[Alarm] = set()
+        for idx in range(16):
+            alarm_byte = struct.unpack_from("B", response.params, idx)[0]
+            for i in range(alarm_byte.bit_length()):
+                if (alarm_byte >> i) & 1:
+                    alarm_index = idx * 8 + i
+                    try:
+                        alarm = Alarm(alarm_index)
+                        active_alarms.add(alarm)
+                    except ValueError:
+                        print(f"Warning: Unknown alarm code: {alarm_index}")
+        return active_alarms
 
     def clear_all_alarms_state(self) -> None:
         """
