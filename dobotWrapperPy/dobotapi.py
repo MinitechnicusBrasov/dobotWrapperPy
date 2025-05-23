@@ -287,7 +287,7 @@ class DobotApi(threading.Thread):
         self.lock.acquire()
         try:
             self._send_message(msg)
-            response_wait_timeout = time.time() + 0.5  # 0.5s for response
+            response_wait_timeout = time.time() + 5  # 0.5s for response
             response = None
             while time.time() < response_wait_timeout:
                 response = self._read_message()
