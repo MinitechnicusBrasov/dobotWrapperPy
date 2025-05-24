@@ -6,10 +6,10 @@ class Grid:
     """Represents a 2D grid with traversal functionality.
 
     Attributes:
-        row_size (int): Number of rows in the grid.
-        column_size (int): Number of columns in the grid.
-        current_x (int): Current horizontal position (column index).
-        current_y (int): Current vertical position (row index).
+        row_size: Number of rows in the grid. (int)
+        column_size: Number of columns in the grid. (int)
+        current_x: Current horizontal position (column index). (int)
+        current_y: Current vertical position (row index). (int)
     """
 
     row_size: int
@@ -21,8 +21,8 @@ class Grid:
         """Initializes the Grid with given dimensions.
 
         Args:
-            row_size (int): Number of rows in the grid.
-            column_size (int): Number of columns in the grid.
+            row_size: Number of rows in the grid. (int)
+            column_size: Number of columns in the grid. (int)
         """
         self.row_size = row_size
         self.column_size = column_size
@@ -99,10 +99,10 @@ class Grid:
         """Calculates the current (x, y) offset in physical space.
 
         Args:
-            distance_between_pos (float): Distance between adjacent grid positions.
+            distance_between_pos: Distance between adjacent grid positions. (float)
 
         Returns:
-            Tuple[float, float]: The (x, y) offset based on the current position.
+            The (x, y) offset based on the current position. (Tuple[float, float])
         """
         return (
             self.current_x * distance_between_pos,
@@ -120,11 +120,11 @@ class DobotSupliment:
         Uses the arctangent function to determine the direction.
 
         Args:
-            x (float): The x-coordinate of the point.
-            y (float): The y-coordinate of the point.
+            x: The x-coordinate of the point. (float)
+            y: The y-coordinate of the point. (float)
 
         Returns:
-            float: The angle in degrees between the x-axis and the point (x, y).
+            The angle in degrees between the x-axis and the point (x, y). (float)
         """
         return math.degrees(math.atan2(y, x))
 
@@ -139,12 +139,12 @@ class DobotSupliment:
 
         Args:
             grid (Grid): The grid object containing the current x and y positions.
-            start_x (float): The starting x-coordinate in physical space.
-            start_y (float): The starting y-coordinate in physical space.
-            distance_between_pos (float): The distance between each grid cell.
+            start_x: The starting x-coordinate in physical space. (float)
+            start_y: The starting y-coordinate in physical space. (float)
+            distance_between_pos: The distance between each grid cell. (float)
 
         Returns:
-            Tuple[float, float]: The resulting (x, y) position in physical space.
+            The resulting (x, y) position in physical space. (Tuple[float, float])
         """
         offset_x, offset_y = grid.calculate_offset(distance_between_pos)
         return start_x + offset_x, start_y + offset_y
