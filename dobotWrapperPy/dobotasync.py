@@ -295,7 +295,7 @@ class DobotAsync:
 
     async def wait(self, ms: int) -> None:
         await self._loop.run_in_executor(
-            None, self.dobotApiInterface.set_wait_cmd, tagWAITCmd(ms)
+            None, self.dobotApiInterface.set_wait_cmd, tagWAITCmd(ms), True, True
         )
 
     async def pose(
@@ -323,5 +323,5 @@ class DobotAsync:
 
     async def home(self) -> None:
         await self._loop.run_in_executor(
-            None, self.dobotApiInterface.set_home_cmd, tagHomeCmd(0)
+            None, self.dobotApiInterface.set_home_cmd, tagHomeCmd(0), True, True
         )
