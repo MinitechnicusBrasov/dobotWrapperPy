@@ -5,8 +5,10 @@ import struct
 from .enums.alarm import Alarm
 from .enums.ptpMode import PTPMode
 from .enums.tagVersionColorSensorAndIR import TagVersionColorSensorAndIR
+from .enums.tagVersionRail import tagVersionRail
 from .message import Message
 from .paramsStructures import (
+    tagWithL,
     tagDevice,
     tagPTPCommonParams,
     tagPTPCoordinateParams,
@@ -342,4 +344,54 @@ class DobotAsync:
             tagDevice(True, port, version),
             True,
             True,
+        )
+
+    async def get_device_serial_number(self) -> str:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_device_sn
+        )
+
+    async def get_device_id(self) -> Tuple[int, int, int]:
+
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_device_id
+        )
+
+    async def get_device_name(self) -> str:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_device_name
+        )
+
+    async def get_device_rail_capability(self) -> bool:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_device_rail_capability
+        )
+
+    async def get_device_time(self) -> int:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_device_time
+        )
+
+    async def get_device_version(self) -> Tuple[int, int, int]:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_device_version
+        )
+
+    async def set_device_serial_number(self, serial_number: str) -> None:
+        await self._loop.run_in_executor(
+            None, self.dobotApiInterface.set_device_sn, serial_number
+        )
+
+    async def set_device_name(self, name: str) -> None:
+        await self._loop.run_in_executor(
+            None, self.dobotApiInterface.set_device_name, name
+        )
+
+    async def set_device_rail_capability(
+        self, name: str, enable: bool, version: tagVersionRail
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_device_rail_capability,
+            tagWithL(enable, version),
         )
