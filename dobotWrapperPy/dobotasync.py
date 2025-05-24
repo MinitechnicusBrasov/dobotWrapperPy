@@ -2,6 +2,7 @@ from .dobotapi import DobotApi
 from .dobotConnection import DobotConnection
 import warnings
 import struct
+from .enums.alarm import Alarm
 from .enums.ptpMode import PTPMode
 from .message import Message
 from .paramsStructures import (
@@ -10,9 +11,10 @@ from .paramsStructures import (
     tagWAITCmd,
     tagPose,
     tagPTPCmd,
+    tagPTPWithLCmd,
 )
 import asyncio
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Set
 from enum import Enum
 import signal
 import sys
@@ -125,9 +127,124 @@ class DobotAsync:
             True,
         )
 
+    # Rail Movement
+
+    async def move_xyz_rail_linear(
+        self, x: float, y: float, z: float, r: float, rail: float
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_with_rail_cmd,
+            tagPTPWithLCmd(PTPMode.MOVL_XYZ, x, y, z, r, rail),
+            True,
+            True,
+        )
+
+    async def move_xyz_rail_joint(
+        self, x: float, y: float, z: float, r: float, rail: float
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_with_rail_cmd,
+            tagPTPWithLCmd(PTPMode.MOVJ_XYZ, x, y, z, r, rail),
+            True,
+            True,
+        )
+
+    async def move_relative_xyz_rail_linear(
+        self,
+        delta_x: float,
+        delta_y: float,
+        delta_z: float,
+        delta_r: float,
+        delta_rail: float,
+    ) -> None:
+        (x, y, z, r, _, _, _, _) = await self.pose()
+        rail = await self.pose_rail()
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_with_rail_cmd,
+            tagPTPWithLCmd(
+                PTPMode.MOVL_XYZ,
+                x + delta_x,
+                y + delta_y,
+                z + delta_z,
+                r + delta_r,
+                rail + delta_rail,
+            ),
+            True,
+            True,
+        )
+
+    async def move_relative_xyz_rail_joint(
+        self,
+        delta_x: float,
+        delta_y: float,
+        delta_z: float,
+        delta_r: float,
+        delta_rail: float,
+    ) -> None:
+        (x, y, z, r, _, _, _, _) = await self.pose()
+        rail = await self.pose_rail()
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_with_rail_cmd,
+            tagPTPWithLCmd(
+                PTPMode.MOVJ_XYZ,
+                x + delta_x,
+                y + delta_y,
+                z + delta_z,
+                r + delta_r,
+                rail + delta_rail,
+            ),
+            True,
+            True,
+        )
+
+    async def jump_relative_xyz_rail(
+        self,
+        delta_x: float,
+        delta_y: float,
+        delta_z: float,
+        delta_r: float,
+        delta_rail: float,
+    ) -> None:
+        (x, y, z, r, _, _, _, _) = await self.pose()
+        rail = await self.pose_rail()
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_with_rail_cmd,
+            tagPTPWithLCmd(
+                PTPMode.JUMP_XYZ,
+                x + delta_x,
+                y + delta_y,
+                z + delta_z,
+                r + delta_r,
+                rail + delta_rail,
+            ),
+            True,
+            True,
+        )
+
+    async def jump_rail(
+        self, x: float, y: float, z: float, r: float, rail: float
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_with_rail_cmd,
+            tagPTPWithLCmd(PTPMode.JUMP_MOVL_XYZ, x, y, z, r, rail),
+            True,
+            True,
+        )
+
     async def clear_alarms(self) -> None:
         await self._loop.run_in_executor(
             None, self.dobotApiInterface.clear_all_alarms_state
+        )
+
+    async def get_alarms(self) -> Set[Alarm]:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_active_alarms
         )
 
     async def suck(self, enable: bool) -> None:
@@ -196,3 +313,9 @@ class DobotAsync:
             pos.jointAngle[2],
             pos.jointAngle[3],
         )
+
+    async def pose_rail(self) -> float:
+        pos = await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_pose_rail
+        )
+        return pos
