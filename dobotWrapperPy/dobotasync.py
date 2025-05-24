@@ -56,11 +56,62 @@ class DobotAsync:
         if hasattr(self, "dobotApiInterface") and self.dobotApiInterface is not None:
             del self.dobotApiInterface
 
-    async def move_to_linear(self, x: float, y: float, z: float, r: float) -> None:
+    async def move_xyz_linear(self, x: float, y: float, z: float, r: float) -> None:
         await self._loop.run_in_executor(
             None,
             self.dobotApiInterface.set_ptp_cmd,
             tagPTPCmd(PTPMode.MOVL_XYZ, x, y, z, r),
+            True,
+            True,
+        )
+
+    async def move_xyz_joint(self, x: float, y: float, z: float, r: float) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_cmd,
+            tagPTPCmd(PTPMode.MOVJ_XYZ, x, y, z, r),
+            True,
+            True,
+        )
+
+    async def move_relative_xyz_linear(
+        self, delta_x: float, delta_y: float, delta_z: float, delta_r: float
+    ) -> None:
+        (x, y, z, r, _, _, _, _) = await self.pose()
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_cmd,
+            tagPTPCmd(
+                PTPMode.MOVL_XYZ, x + delta_x, y + delta_y, z + delta_z, r + delta_r
+            ),
+            True,
+            True,
+        )
+
+    async def move_relative_xyz_joint(
+        self, delta_x: float, delta_y: float, delta_z: float, delta_r: float
+    ) -> None:
+        (x, y, z, r, _, _, _, _) = await self.pose()
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_cmd,
+            tagPTPCmd(
+                PTPMode.MOVJ_XYZ, x + delta_x, y + delta_y, z + delta_z, r + delta_r
+            ),
+            True,
+            True,
+        )
+
+    async def jump_relative_xyz(
+        self, delta_x: float, delta_y: float, delta_z: float, delta_r: float
+    ) -> None:
+        (x, y, z, r, _, _, _, _) = await self.pose()
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ptp_cmd,
+            tagPTPCmd(
+                PTPMode.JUMP_XYZ, x + delta_x, y + delta_y, z + delta_z, r + delta_r
+            ),
             True,
             True,
         )
