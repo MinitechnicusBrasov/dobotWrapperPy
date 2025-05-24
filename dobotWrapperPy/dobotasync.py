@@ -395,3 +395,13 @@ class DobotAsync:
             self.dobotApiInterface.set_device_rail_capability,
             tagWithL(enable, version),
         )
+
+    async def set_lost_step_error(self, error: float) -> None:
+        await self._loop.run_in_executor(
+            None, self.dobotApiInterface.set_lost_step_cmd, True, True
+        )
+
+    async def set_lost_step_command(self, threshold: float) -> None:
+        await self._loop.run_in_executor(
+            None, self.dobotApiInterface.set_lost_step_cmd, True, True
+        )
