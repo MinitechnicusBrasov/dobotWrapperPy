@@ -12,17 +12,45 @@ from .paramsStructures import (
     tagPTPCmd,
 )
 import asyncio
-from typing import Tuple
+from typing import Tuple, Optional
+from enum import Enum
+import signal
+import sys
+
+
+class EndEffectorType(Enum):
+    CUP = 0
+    GRIPPER = 1
+    LASER = 2
 
 
 class DobotAsync:
     dobotApiInterface: DobotApi
     _loop: asyncio.AbstractEventLoop
+    _endEffectorType: Optional[EndEffectorType]
 
     def __init__(self, port: str, verbose: bool = False) -> None:
         conn = DobotConnection(port=port)
         self.dobotApiInterface = DobotApi(conn, verbose)
         self._loop = asyncio.get_running_loop()
+        self._loop.add_signal_handler(signal.SIGINT, self._on_sigint)
+        self._endEffectorType = None
+
+    async def _on_sigint(self) -> None:
+        print("SIGINT received. Force Stopping robot...")
+        self.force_stop()
+        match self._endEffectorType:
+            case EndEffectorType.CUP:
+                await self.suck(False)
+            case EndEffectorType.GRIPPER:
+                await self.grip(False)
+            case EndEffectorType.LASER:
+                await self.laser(False)
+        # Exit the program immediately — no further code runs
+        sys.exit(130)  # Standard exit code for Ctrl+C
+
+    def force_stop(self) -> None:
+        self.dobotApiInterface.set_queued_cmd_force_stop_exec()
 
     def __del__(self) -> None:
         if hasattr(self, "dobotApiInterface") and self.dobotApiInterface is not None:
@@ -59,12 +87,24 @@ class DobotAsync:
             True,
             True,
         )
+        self._endEffectorType = EndEffectorType.CUP
 
     async def grip(self, enable: bool) -> None:
         await self._loop.run_in_executor(
             None, self.dobotApiInterface.set_end_effector_gripper, enable, True, True
         )
-        self.dobotApiInterface.set_end_effector_gripper(enable)
+        self._endEffectorType = EndEffectorType.GRIPPER
+
+    async def laser(self, enable: bool) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_end_effector_laser,
+            True,
+            enable,
+            True,
+            True,
+        )
+        self._endEffectorType = EndEffectorType.LASER
 
     async def speed(self, velocity: float = 100.0, acceleration: float = 100.0) -> None:
         task_1 = self._loop.run_in_executor(
