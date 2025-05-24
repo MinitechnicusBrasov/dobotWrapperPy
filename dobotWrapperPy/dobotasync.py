@@ -12,6 +12,7 @@ from .paramsStructures import (
     tagPose,
     tagPTPCmd,
     tagPTPWithLCmd,
+    tagHomeCmd,
 )
 import asyncio
 from typing import Tuple, Optional, Set
@@ -319,3 +320,8 @@ class DobotAsync:
             None, self.dobotApiInterface.get_pose_rail
         )
         return pos
+
+    async def home(self) -> None:
+        await self._loop.run_in_executor(
+            None, self.dobotApiInterface.set_home_cmd, tagHomeCmd(0)
+        )
