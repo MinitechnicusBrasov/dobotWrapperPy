@@ -4,14 +4,17 @@ import warnings
 import struct
 from .enums.alarm import Alarm
 from .enums.ptpMode import PTPMode
+from .enums.tagVersionColorSensorAndIR import TagVersionColorSensorAndIR
 from .message import Message
 from .paramsStructures import (
+    tagDevice,
     tagPTPCommonParams,
     tagPTPCoordinateParams,
     tagWAITCmd,
     tagPose,
     tagPTPCmd,
     tagPTPWithLCmd,
+    tagHomeCmd,
 )
 import asyncio
 from typing import Tuple, Optional, Set
@@ -294,7 +297,7 @@ class DobotAsync:
 
     async def wait(self, ms: int) -> None:
         await self._loop.run_in_executor(
-            None, self.dobotApiInterface.set_wait_cmd, tagWAITCmd(ms)
+            None, self.dobotApiInterface.set_wait_cmd, tagWAITCmd(ms), True, True
         )
 
     async def pose(
@@ -319,3 +322,24 @@ class DobotAsync:
             None, self.dobotApiInterface.get_pose_rail
         )
         return pos
+
+    async def home(self) -> None:
+        await self._loop.run_in_executor(
+            None, self.dobotApiInterface.set_home_cmd, tagHomeCmd(0), True, True
+        )
+
+    async def get_ir_value(self) -> bool:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_ir_switch
+        )
+
+    async def set_ir_params(
+        self, port: int, version: TagVersionColorSensorAndIR
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_ir_switch,
+            tagDevice(True, port, version),
+            True,
+            True,
+        )
