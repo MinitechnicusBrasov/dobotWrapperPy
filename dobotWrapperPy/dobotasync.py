@@ -452,4 +452,19 @@ class DobotAsync:
             tagCPCmd(CPMode.RELATIVE, delta_x, delta_y, delta_z, power),
             True,
             True,
+     
+    async def set_angle_static_error(
+        self, rear_arm_angle: float, front_arm_angle: float
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_angle_sensor_static_error,
+            rear_arm_angle,
+            front_arm_angle,
+        )
+
+    async def get_angle_static_error(self) -> Tuple[float, float]:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_angle_sensor_static_error
+
         )
