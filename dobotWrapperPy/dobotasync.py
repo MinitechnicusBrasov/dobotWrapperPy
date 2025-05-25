@@ -10,6 +10,7 @@ from .enums.realTimeTrack import RealTimeTrack
 from .enums.CPMode import CPMode
 from .enums.level import Level
 from .enums.IOFunction import IOFunction
+from .enums.EMotorIndex import EMotorIndex
 from .message import Message
 from .paramsStructures import (
     tagIOMultiplexing,
@@ -27,6 +28,7 @@ from .paramsStructures import (
     tagIODO,
     tagIODI,
     tagIOPWM,
+    tagEMOTOR,
 )
 import asyncio
 from typing import Tuple, Optional, Set
@@ -340,9 +342,9 @@ class DobotAsync:
             None, self.dobotApiInterface.set_home_cmd, tagHomeCmd(0), True, True
         )
 
-    async def get_ir_value(self) -> bool:
+    async def get_ir_value(self, port: int) -> bool:
         return await self._loop.run_in_executor(
-            None, self.dobotApiInterface.get_ir_switch
+            None, self.dobotApiInterface.get_ir_switch, port
         )
 
     async def set_ir_params(
@@ -525,3 +527,28 @@ class DobotAsync:
             None, self.dobotApiInterface.get_io_pwm, address
         )
         return (result.frequency, result.dutyCycle)
+
+    async def set_motor(self, address: EMotorIndex, enable: bool, speed: float) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_e_motor,
+            tagEMOTOR(address, enable, speed),
+            True,
+            True,
+        )
+
+    async def set_color_sensor(
+        self, enable: bool, port: int, version: TagVersionColorSensorAndIR
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_color_sensor,
+            tagDevice(enable, port, version),
+            True,
+            True,
+        )
+
+    async def get_color_sensor(self, port: int) -> Tuple[int, int, int]:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_color_sensor, port
+        )
