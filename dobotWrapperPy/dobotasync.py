@@ -32,6 +32,7 @@ from .paramsStructures import (
     tagIOPWM,
     tagEMOTOR,
     tagJOGCmd,
+    tagARCCmd,
 )
 import asyncio
 from typing import Tuple, Optional, Set
@@ -624,6 +625,28 @@ class DobotAsync:
             None,
             self.dobotApiInterface.set_jog_cmd,
             tagJOGCmd(JogMode.COORDINATE, JogCmd.DN_DOWN),
+            True,
+            True,
+        )
+
+    async def move_in_circle(
+        self,
+        relative_x: float,
+        relative_y: float,
+        relative_z: float,
+        relative_r: float,
+        end_x: float,
+        end_y: float,
+        end_z: float,
+        end_r: float,
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_arc_cmd,
+            tagARCCmd(
+                tagARCCmd.Point(relative_x, relative_y, relative_z, relative_r),
+                tagARCCmd.Point(end_x, end_y, end_z, end_r),
+            ),
             True,
             True,
         )
