@@ -18,7 +18,7 @@ class DobotGUIApp:
         self.dobot = dobot_instance
 
         self.root.title("Dobot Control Panel")
-        self.root.geometry("600x450")
+        self.root.geometry("800x800")  # Increased height to accommodate new controls
         self.root.resizable(False, False)  # Fixed size for simplicity, can be changed
 
         # Apply Inter font globally (or as much as Tkinter allows)
@@ -49,7 +49,7 @@ class DobotGUIApp:
         )
         self.connection_status_label.pack(pady=(0, 10))
 
-        # Buttons Frame
+        # Buttons Frame (for general Dobot commands)
         buttons_frame = tk.Frame(main_frame, bg="#f0f0f0")
         buttons_frame.pack(pady=10)
 
@@ -91,15 +91,116 @@ class DobotGUIApp:
         create_styled_button(buttons_frame, "Clear Alarms", self._clear_alarms_cmd)
         create_styled_button(buttons_frame, "Get Pose", self._get_pose_cmd)
 
-        # Movement Buttons Frame
-        movement_frame = tk.Frame(main_frame, bg="#f0f0f0")
-        movement_frame.pack(pady=10)
-        create_styled_button(movement_frame, "Jump to P1", self._jump_first_cmd)
-        create_styled_button(movement_frame, "Jump to P2", self._jump_second_cmd)
-        create_styled_button(movement_frame, "Jump to P3", self._jump_third_cmd)
+        # Movement Buttons Frame (for preset jumps)
+        # movement_frame = tk.Frame(main_frame, bg="#f0f0f0")
+        # movement_frame.pack(pady=10)
 
-        # Schedule the initial connection attempt to run in the asyncio loop
-        self.loop.call_soon_threadsafe(self.loop.create_task, self._initial_connect())
+        # Joystick Frame for incremental movements
+        joystick_frame = tk.LabelFrame(
+            main_frame,
+            text="Incremental Movement (Joystick)",
+            padx=10,
+            pady=10,
+            bg="#f0f0f0",
+            font=("Inter", 12, "bold"),
+        )
+        joystick_frame.pack(pady=20, fill="x")
+
+        # Use a grid layout for joystick-like appearance
+        joystick_grid_frame = tk.Frame(joystick_frame, bg="#f0f0f0")
+        joystick_grid_frame.pack(expand=True)  # Center the grid within the labelframe
+
+        # Define button size for consistent joystick look
+        button_width = 8
+        button_height = 2
+
+        # Helper for creating styled buttons for grid layout, with fixed size
+        def create_styled_button_grid(
+            parent: tk.Widget,
+            text: str,
+            command: Callable[[], None],
+            width: int,
+            height: int,
+        ) -> tk.Button:
+            btn = tk.Button(
+                parent,
+                text=text,
+                command=command,
+                font=("Inter", 11, "bold"),
+                bg="#007bff",
+                fg="white",
+                activebackground="#0056b3",
+                relief="raised",
+                bd=3,
+                width=width,
+                height=height,  # Fixed width and height
+                borderwidth=2,
+                highlightbackground="#0056b3",
+                cursor="hand2",
+            )
+
+            # Basic hover effect
+            def on_enter(event: Any) -> None:
+                btn.config(bg="#0056b3")
+
+            def on_leave(event: Any) -> None:
+                btn.config(bg="#007bff")
+
+            btn.bind("<Enter>", on_enter)
+            btn.bind("<Leave>", on_leave)
+            return btn
+
+        # Row 0: Z-axis control
+        tk.Frame(
+            joystick_grid_frame,
+            width=button_width * 10,
+            height=button_height * 10,
+            bg="#f0f0f0",
+        ).grid(
+            row=0, column=0, columnspan=3
+        )  # Spacer
+        create_styled_button_grid(
+            joystick_grid_frame, "+Y", self._positive_y, button_width, button_height
+        ).grid(row=0, column=1, padx=5, pady=5)
+
+        # Row 1: X-axis and Y-axis controls
+        create_styled_button_grid(
+            joystick_grid_frame, "-X", self._negative_x, button_width, button_height
+        ).grid(row=1, column=0, padx=5, pady=5)
+        create_styled_button_grid(
+            joystick_grid_frame, "+X", self._positive_x, button_width, button_height
+        ).grid(row=1, column=2, padx=5, pady=5)
+        # Add a blank space in the center of the X-Y-Z cross
+        tk.Frame(
+            joystick_grid_frame,
+            width=button_width * 10,
+            height=button_height * 10,
+            bg="#f0f0f0",
+        ).grid(row=1, column=1, padx=5, pady=5)
+
+        # Row 2: Z-axis and R-axis controls
+        create_styled_button_grid(
+            joystick_grid_frame, "-Y", self._negative_z, button_width, button_height
+        ).grid(row=2, column=1, padx=5, pady=5)
+
+        # Separate frame for Y and R controls to allow more flexible placement
+        y_r_frame = tk.Frame(joystick_grid_frame, bg="#f0f0f0")
+        y_r_frame.grid(
+            row=1, column=3, rowspan=2, padx=15, pady=5, sticky="ns"
+        )  # Placed to the right of the main cross
+
+        create_styled_button_grid(
+            y_r_frame, "+Z", self._positive_z, button_width, button_height
+        ).pack(pady=5)
+        create_styled_button_grid(
+            y_r_frame, "-Z", self._negative_z, button_width, button_height
+        ).pack(pady=5)
+        create_styled_button_grid(
+            y_r_frame, "+R", self._positive_r, button_width, button_height
+        ).pack(pady=5)
+        create_styled_button_grid(
+            y_r_frame, "-R", self._negative_r, button_width, button_height
+        ).pack(pady=5)
 
     async def _initial_connect(self) -> None:
         """Attempts to connect to Dobot on app startup."""
@@ -145,7 +246,7 @@ class DobotGUIApp:
     async def _connect_dobot_task(self) -> bool:
         """Asynchronous task to connect to the Dobot."""
         try:
-            raise Exception("Trying to connect")
+            await self.dobot.get_device_id()
             self.connection_status_label.config(
                 text="Connection: Connected", fg="green"
             )
@@ -174,17 +275,29 @@ class DobotGUIApp:
 
         self._schedule_dobot_task(get_pose_coro(), "Getting Pose")
 
-    def _jump_first_cmd(self) -> None:
-        """Button command for the first jump movement."""
-        self._schedule_dobot_task(self.dobot.jump(19, -263, 54, 0), "Jump to P1")
+    def _positive_x(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_positive_x(), "+X")
 
-    def _jump_second_cmd(self) -> None:
-        """Button command for the second jump movement."""
-        self._schedule_dobot_task(self.dobot.jump(262, -20, 80, 0), "Jump to P2")
+    def _negative_x(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_negative_x(), "-X")
 
-    def _jump_third_cmd(self) -> None:
-        """Button command for the third jump movement."""
-        self._schedule_dobot_task(self.dobot.jump(4, 263, 90, 0), "Jump to P3")
+    def _positive_y(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_positive_y(), "+Y")
+
+    def _negative_y(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_negative_y(), "-Y")
+
+    def _positive_z(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_positive_z(), "+Z")
+
+    def _negative_z(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_negative_z(), "-Z")
+
+    def _positive_r(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_positive_r(), "+R")
+
+    def _negative_r(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_negative_r(), "-R")
 
 
 class DobotGUIController:
@@ -227,8 +340,8 @@ class DobotGUIController:
         self.async_thread.start()
 
         # Create and run the GUI application in the main thread
-        app = DobotGUIApp(self.root, self.loop, self.dobot_async_instance)
-
+        DobotGUIApp(self.root, self.loop, self.dobot_async_instance)
+        #
         # Start the Tkinter main loop
         self.root.mainloop()
 
