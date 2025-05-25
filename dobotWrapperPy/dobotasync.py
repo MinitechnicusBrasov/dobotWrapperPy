@@ -8,8 +8,11 @@ from .enums.tagVersionColorSensorAndIR import TagVersionColorSensorAndIR
 from .enums.tagVersionRail import tagVersionRail
 from .enums.realTimeTrack import RealTimeTrack
 from .enums.CPMode import CPMode
+from .enums.level import Level
+from .enums.IOFunction import IOFunction
 from .message import Message
 from .paramsStructures import (
+    tagIOMultiplexing,
     tagWithL,
     tagDevice,
     tagPTPCommonParams,
@@ -21,6 +24,9 @@ from .paramsStructures import (
     tagHomeCmd,
     tagCPParams,
     tagCPCmd,
+    tagIODO,
+    tagIODI,
+    tagIOPWM,
 )
 import asyncio
 from typing import Tuple, Optional, Set
@@ -468,3 +474,54 @@ class DobotAsync:
         return await self._loop.run_in_executor(
             None, self.dobotApiInterface.get_angle_sensor_static_error
         )
+
+    async def set_pin_purpose(self, address: int, purpose: IOFunction) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_io_multiplexing,
+            tagIOMultiplexing(address, purpose),
+            True,
+            True,
+        )
+
+    async def get_pin_purpose(self, address: int) -> IOFunction:
+        return (
+            await self._loop.run_in_executor(
+                None, self.dobotApiInterface.get_io_multiplexing, address
+            )
+        ).multiplex
+
+    async def set_pin_output(self, address: int, level: Level) -> None:
+        await self._loop.run_in_executor(
+            None, self.dobotApiInterface.set_io_do, tagIODO(address, level), True, True
+        )
+
+    async def get_pin_output(self, address: int) -> Level:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_io_do, address
+        )
+
+    async def get_pin_input(self, address: int) -> Level:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_io_di, address
+        )
+
+    async def get_adc(self, address: int) -> int:
+        return await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_io_adc, address
+        )
+
+    async def set_pwm(self, address: int, frequency: float, cycle: float) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_io_pwm,
+            tagIOPWM(address, frequency, cycle),
+            True,
+            True,
+        )
+
+    async def get_pwm(self, address: int) -> Tuple[float, float]:
+        result = await self._loop.run_in_executor(
+            None, self.dobotApiInterface.get_io_pwm, address
+        )
+        return (result.frequency, result.dutyCycle)
