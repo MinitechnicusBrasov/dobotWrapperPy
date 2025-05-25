@@ -6,6 +6,8 @@ from .enums.alarm import Alarm
 from .enums.ptpMode import PTPMode
 from .enums.tagVersionColorSensorAndIR import TagVersionColorSensorAndIR
 from .enums.tagVersionRail import tagVersionRail
+from .enums.realTimeTrack import RealTimeTrack
+from .enums.CPMode import CPMode
 from .message import Message
 from .paramsStructures import (
     tagWithL,
@@ -17,6 +19,8 @@ from .paramsStructures import (
     tagPTPCmd,
     tagPTPWithLCmd,
     tagHomeCmd,
+    tagCPParams,
+    tagCPCmd,
 )
 import asyncio
 from typing import Tuple, Optional, Set
@@ -404,6 +408,50 @@ class DobotAsync:
     async def set_lost_step_command(self, threshold: float) -> None:
         await self._loop.run_in_executor(
             None, self.dobotApiInterface.set_lost_step_cmd, True, True
+        )
+
+    async def set_continous_trajectory_parameters(
+        self, acceleration: float, realTime: RealTimeTrack
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_cp_params,
+            tagCPParams(acceleration, acceleration, acceleration, realTime),
+            True,
+            True,
+        )
+
+    async def move_with_continous_trajectory_relative(
+        self, delta_x: float, delta_y: float, delta_z: float
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_cp_cmd,
+            tagCPCmd(CPMode.RELATIVE, delta_x, delta_y, delta_z, 10),
+            True,
+            True,
+        )
+
+    async def move_with_continous_trajectory_absolute(
+        self, x: float, y: float, z: float
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_cp_cmd,
+            tagCPCmd(CPMode.ABSOLUTE, x, y, z, 10),
+            True,
+            True,
+        )
+
+    async def move_with_continous_trajectory_laser_relative(
+        self, delta_x: float, delta_y: float, delta_z: float, power: float
+    ) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_cp_le_cmd,
+            tagCPCmd(CPMode.RELATIVE, delta_x, delta_y, delta_z, power),
+            True,
+            True,
         )
 
     async def set_angle_static_error(
