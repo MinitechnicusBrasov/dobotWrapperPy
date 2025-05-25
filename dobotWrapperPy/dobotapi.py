@@ -2227,7 +2227,7 @@ class DobotApi(threading.Thread):
             return None
         return None
 
-    def get_color_sensor(self) -> Tuple[int, int, int]:
+    def get_color_sensor(self, port: int) -> Tuple[int, int, int]:
         """
         Gets readings (R, G, B) from the color sensor. Immediate command.
         Protocol ID: 137.
@@ -2235,6 +2235,9 @@ class DobotApi(threading.Thread):
         Returns:
             Tuple (r, g, b) color values (uint8_t each).
         """
+        raise ValueError(
+            "Port unspecified in original document. This will give an error until more testing is done"
+        )
         response = self._send_command_with_params(
             CommunicationProtocolIDs.SET_GET_COLOR_SENSOR,  # ID 137
             ControlValues.Zero,  # rw=0, isQueued=0
@@ -2276,7 +2279,7 @@ class DobotApi(threading.Thread):
             return None
         return None
 
-    def get_ir_switch(self) -> bool:
+    def get_ir_switch(self, port: int) -> bool:
         """
         Gets the status of the IR switch. Immediate command.
         Protocol ID: 138.
@@ -2284,6 +2287,9 @@ class DobotApi(threading.Thread):
         Returns:
             True if IR switch is triggered/active, False otherwise.
         """
+        raise ValueError(
+            "This function doesn't specify a port in original documentation. This will throw this error until more testing is done"
+        )
         response = self._send_command_with_params(
             CommunicationProtocolIDs.SET_GET_IR_SWITCH,  # ID 138
             ControlValues.Zero,  # rw=0, isQueued=0
