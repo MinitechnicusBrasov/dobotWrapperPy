@@ -11,6 +11,8 @@ from .enums.CPMode import CPMode
 from .enums.level import Level
 from .enums.IOFunction import IOFunction
 from .enums.EMotorIndex import EMotorIndex
+from .enums.jogCmd import JogCmd
+from .enums.jogMode import JogMode
 from .message import Message
 from .paramsStructures import (
     tagIOMultiplexing,
@@ -29,6 +31,7 @@ from .paramsStructures import (
     tagIODI,
     tagIOPWM,
     tagEMOTOR,
+    tagJOGCmd,
 )
 import asyncio
 from typing import Tuple, Optional, Set
@@ -551,4 +554,76 @@ class DobotAsync:
     async def get_color_sensor(self, port: int) -> Tuple[int, int, int]:
         return await self._loop.run_in_executor(
             None, self.dobotApiInterface.get_color_sensor, port
+        )
+
+    async def move_joystick_positive_x(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.AP_DOWN),
+            True,
+            True,
+        )
+
+    async def move_joystick_negative_x(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.AN_DOWN),
+            True,
+            True,
+        )
+
+    async def move_joystick_positive_y(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.BP_DOWN),
+            True,
+            True,
+        )
+
+    async def move_joystick_negative_y(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.BN_DOWN),
+            True,
+            True,
+        )
+
+    async def move_joystick_positive_z(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.CP_DOWN),
+            True,
+            True,
+        )
+
+    async def move_joystick_negative_z(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.CN_DOWN),
+            True,
+            True,
+        )
+
+    async def move_joystick_positive_r(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.DP_DOWN),
+            True,
+            True,
+        )
+
+    async def move_joystick_negative_r(self) -> None:
+        await self._loop.run_in_executor(
+            None,
+            self.dobotApiInterface.set_jog_cmd,
+            tagJOGCmd(JogMode.COORDINATE, JogCmd.DN_DOWN),
+            True,
+            True,
         )
