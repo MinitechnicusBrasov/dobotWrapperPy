@@ -1974,7 +1974,7 @@ class DobotApi(threading.Thread):
             return None
         return None
 
-    def get_io_multiplexing(self) -> tagIOMultiplexing:
+    def get_io_multiplexing(self, address: int) -> tagIOMultiplexing:
         """
         Gets I/O multiplexing configuration. Immediate command.
         Protocol ID: 130.
@@ -1983,6 +1983,9 @@ class DobotApi(threading.Thread):
         Returns:
             Current I/O multiplexing configuration (likely for a default/first address).
         """
+        raise ValueError(
+            "The function implies that an address is needed, but in specifications of the protocol, an address is not specified"
+        )
         response = self._send_command_with_params(
             CommunicationProtocolIDs.SET_GET_IO_MULTIPLEXING,  # ID 130
             ControlValues.Zero,  # rw=0, isQueued=0
