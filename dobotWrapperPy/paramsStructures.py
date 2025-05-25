@@ -1607,6 +1607,12 @@ class tagARCCmd:
         z: float
         r: float
 
+        def __init__(self, x: float, y: float, z: float, r: float):
+            self.x = x
+            self.y = y
+            self.z = z
+            self.r = r
+
         def pack(self) -> bytes:
             """
             Packs the Point object into a bytes sequence.
