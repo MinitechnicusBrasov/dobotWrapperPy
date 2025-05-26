@@ -1,5 +1,5 @@
 from .dobotapi import DobotApi
-from .dobotConnection import DobotConnection
+from .dobotConnection import DobotConnection 
 import warnings
 import struct
 from .enums.alarm import Alarm
@@ -35,7 +35,7 @@ from .paramsStructures import (
     tagARCCmd,
 )
 import asyncio
-from typing import Tuple, Optional, Set
+from typing import Tuple, Optional, Set, Any
 from enum import Enum
 import signal
 import sys
@@ -56,10 +56,10 @@ class DobotAsync:
         conn = DobotConnection(port=port)
         self.dobotApiInterface = DobotApi(conn, verbose)
         self._loop = asyncio.get_running_loop()
-        self._loop.add_signal_handler(signal.SIGINT, self._on_sigint)
+        signal.signal(signal.SIGINT, self._on_sigint)
         self._endEffectorType = None
 
-    async def _on_sigint(self) -> None:
+    async def _on_sigint(self, signum: int, frame: Optional[Any]) -> None:
         print("SIGINT received. Force Stopping robot...")
         self.force_stop()
         match self._endEffectorType:
