@@ -71,7 +71,7 @@ class DobotAsync:
             case EndEffectorType.CUP:
                 await self.suck(False)
             case EndEffectorType.GRIPPER:
-                await self.grip(False)
+                await self.grip(False, False)
             case EndEffectorType.LASER:
                 await self.laser(False)
         # Exit the program immediately — no further code runs
@@ -271,9 +271,9 @@ class DobotAsync:
         )
         self._endEffectorType = EndEffectorType.CUP
 
-    async def grip(self, enable: bool) -> None:
+    async def grip(self, enable: bool, grip: bool) -> None:
         await self._run_in_loop(
-            self.dobotApiInterface.set_end_effector_gripper, enable, True, True
+            self.dobotApiInterface.set_end_effector_gripper, enable, grip, True, True
         )
         self._endEffectorType = EndEffectorType.GRIPPER
 
