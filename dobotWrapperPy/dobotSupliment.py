@@ -1,5 +1,11 @@
 import math
 from typing import Tuple
+from enum import Enum
+
+
+class Direction(Enum):
+    POSITIVE = 1
+    NEGATIVE = -1
 
 
 class Grid:
@@ -95,7 +101,9 @@ class Grid:
         else:
             self.current_y -= 1
 
-    def calculate_offset(self, distance_between_pos: float) -> Tuple[float, float]:
+    def calculate_offset(
+        self, distance_between_pos: float, dir_x: Direction, dir_y: Direction
+    ) -> Tuple[float, float]:
         """Calculates the current (x, y) offset in physical space.
 
         Args:
@@ -105,8 +113,8 @@ class Grid:
             The (x, y) offset based on the current position. (Tuple[float, float])
         """
         return (
-            self.current_x * distance_between_pos,
-            self.current_y * distance_between_pos,
+            self.current_x * distance_between_pos * dir_x.value,
+            self.current_y * distance_between_pos * dir_y.value,
         )
 
 
@@ -114,7 +122,7 @@ class DobotSupliment:
     """Utility class for Dobot-related calculations."""
 
     @staticmethod
-    def calculate_r(x: float, y: float) -> float:
+    def calculate_r(x: float, y: float, offset: float = 0) -> float:
         """Calculates the angle in degrees from the origin to the point (x, y).
 
         Uses the arctangent function to determine the direction.
@@ -126,11 +134,16 @@ class DobotSupliment:
         Returns:
             The angle in degrees between the x-axis and the point (x, y). (float)
         """
-        return math.degrees(math.atan2(y, x))
+        return math.degrees(math.atan2(y, x)) + offset
 
     @staticmethod
     def calculate_pos_on_grid(
-        grid: "Grid", start_x: float, start_y: float, distance_between_pos: float
+        grid: "Grid",
+        start_x: float,
+        start_y: float,
+        distance_between_pos: float,
+        dir_x: Direction,
+        dir_y: Direction,
     ) -> Tuple[float, float]:
         """Calculates the absolute position on a grid from a starting point.
 
@@ -146,5 +159,5 @@ class DobotSupliment:
         Returns:
             The resulting (x, y) position in physical space. (Tuple[float, float])
         """
-        offset_x, offset_y = grid.calculate_offset(distance_between_pos)
+        offset_x, offset_y = grid.calculate_offset(distance_between_pos, dir_x, dir_y)
         return start_x + offset_x, start_y + offset_y
