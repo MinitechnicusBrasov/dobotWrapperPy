@@ -85,7 +85,7 @@ def test_get_device_sn_little_endian(
 ) -> None:
     serialNumber = "SN12345"
     returnMsg = Message()
-    returnMsg.id = CommunicationProtocolIDs.GET_SET_DEVICE_SN
+    returnMsg.id = CommunicationProtocolIDs.DEVICE_SN
     returnMsg.ctrl = ControlValues.ReadWrite
     returnMsg.params = bytearray([])
     returnMsg.params.extend(serialNumber.encode("utf-8"))
@@ -136,7 +136,7 @@ def test_get_queued_cmd_current_index_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.GET_QUEUED_CMD_CURRENT_INDEX
+    assert packet_message.id == CommunicationProtocolIDs.QUEUED_CMD_CURRENT_INDEX
     assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
     assert packet_message.params == bytearray(
         []
@@ -166,7 +166,7 @@ def test_set_cp_cmd_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_CP_CMD
+    assert packet_message.id == CommunicationProtocolIDs.CP_CMD
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -195,7 +195,7 @@ def test_set_end_effector_gripper_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_END_EFFECTOR_GRIPPER
+    assert packet_message.id == CommunicationProtocolIDs.END_EFFECTOR_GRIPPER
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -238,7 +238,7 @@ def test_set_end_effector_suction_cup_little_endian(
     assert isinstance(packet_message, Message)
 
     assert (
-        packet_message.id == CommunicationProtocolIDs.SET_GET_END_EFFECTOR_SUCTION_CUP
+        packet_message.id == CommunicationProtocolIDs.END_EFFECTOR_SUCTION_CUP
     )
     assert packet_message.ctrl == ControlValues.ReadWrite
 
@@ -283,7 +283,7 @@ def test_set_ptp_cmd_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_PTP_CMD
+    assert packet_message.id == CommunicationProtocolIDs.PTP_CMD
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -316,7 +316,7 @@ def test_set_wait_cmd_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_WAIT_CMD
+    assert packet_message.id == CommunicationProtocolIDs.WAIT_CMD
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -342,7 +342,7 @@ def test_set_queued_cmd_stop_exec_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_QUEUED_CMD_STOP_EXEC
+    assert packet_message.id == CommunicationProtocolIDs.QUEUED_CMD_STOP_EXEC
     assert packet_message.ctrl == ControlValues.ReadWrite
     assert packet_message.params == bytearray([])  # SET command with no parameters
 
@@ -365,7 +365,7 @@ def test_get_device_sn_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.GET_SET_DEVICE_SN
+    assert packet_message.id == CommunicationProtocolIDs.DEVICE_SN
     assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
     assert packet_message.params == bytearray(
         []
@@ -394,7 +394,7 @@ def test_set_device_name_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.GET_SET_DEVICE_NAME
+    assert packet_message.id == CommunicationProtocolIDs.DEVICE_NAME
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -421,7 +421,7 @@ def test_get_device_name_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.GET_SET_DEVICE_NAME
+    assert packet_message.id == CommunicationProtocolIDs.DEVICE_NAME
     assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
     assert packet_message.params == bytearray(
         []
@@ -449,7 +449,7 @@ def test_get_device_version_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.GET_DEVICE_VERSION
+    assert packet_message.id == CommunicationProtocolIDs.DEVICE_VERSION
     assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
     assert packet_message.params == bytearray(
         []
@@ -479,7 +479,7 @@ def test_set_device_rail_capability_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_DEVICE_WITH_RAIL
+    assert packet_message.id == CommunicationProtocolIDs.DEVICE_WITH_RAIL
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness using the tagWithL structure
@@ -509,7 +509,7 @@ def test_get_device_rail_capability_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_DEVICE_WITH_RAIL
+    assert packet_message.id == CommunicationProtocolIDs.DEVICE_WITH_RAIL
     assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
     assert packet_message.params == bytearray(
         []

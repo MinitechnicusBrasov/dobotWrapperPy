@@ -257,7 +257,7 @@ def test_set_ptp_joint_params_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_JOINT_PARAMS
+    assert packet_message.id == CommunicationProtocolIDs.PTP_JOINT_PARAMS
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -296,7 +296,7 @@ def test_set_ptp_coordinate_params_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_COORDINATE_PARAMS
+    assert packet_message.id == CommunicationProtocolIDs.PTP_COORDINATE_PARAMS
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -330,7 +330,7 @@ def test_set_ptp_jump_params_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_JUMP_PARAMS
+    assert packet_message.id == CommunicationProtocolIDs.PTP_JUMP_PARAMS
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -362,7 +362,7 @@ def test_set_ptp_common_params_little_endian(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_GET_PTP_COMMON_PARAMS
+    assert packet_message.id == CommunicationProtocolIDs.PTP_COMMON_PARAMS
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
@@ -390,7 +390,7 @@ def test_set_queued_cmd_clear_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_QUEUED_CMD_CLEAR
+    assert packet_message.id == CommunicationProtocolIDs.QUEUED_CMD_CLEAR
     assert packet_message.ctrl == ControlValues.ReadWrite
     assert packet_message.params == bytearray([])  # SET command with no parameters
 
@@ -413,6 +413,6 @@ def test_set_queued_cmd_start_exec_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_QUEUED_CMD_START_EXEC
+    assert packet_message.id == CommunicationProtocolIDs.QUEUED_CMD_START_EXEC
     assert packet_message.ctrl == ControlValues.ReadWrite
     assert packet_message.params == bytearray([])  # SET command with no parameters

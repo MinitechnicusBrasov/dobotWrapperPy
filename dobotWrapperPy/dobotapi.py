@@ -9,7 +9,6 @@ from .dobotConnection import DobotConnection
 from .enums.CommunicationProtocolIDs import CommunicationProtocolIDs
 from .enums.ControlValues import ControlValues
 from .enums.HHTTrigMode import HHTTrigMode
-from .enums.ptpMode import PTPMode
 from .enums.alarm import Alarm
 
 # Unused import: tagVersionRail - kept as per original
@@ -94,8 +93,6 @@ class DobotApi(threading.Thread):
                 else "dobot: failed to open serial port"
             )
 
-        self._initialize_robot()
-
     def close(self) -> None:
         """
         Closes the serial connection to the Dobot and releases the lock.
@@ -130,7 +127,7 @@ class DobotApi(threading.Thread):
         if self._on:  # Ensure close is only called if not already explicitly closed
             self.close()
 
-    def _initialize_robot(self) -> None:
+    def initialize_robot(self) -> None:
         """
         Initializes the robot with default parameters upon connection,
         including clearing the command queue, setting PTP joint, coordinate,
@@ -210,7 +207,7 @@ class DobotApi(threading.Thread):
             The current command index (int).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_QUEUED_CMD_CURRENT_INDEX,  # ID 246
+            CommunicationProtocolIDs.QUEUED_CMD_CURRENT_INDEX,  # ID 246
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # PDF Table 212 states: uint64_t queuedCmdCurrentIndex
@@ -385,7 +382,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_CP_CMD,  # ID 91
+            CommunicationProtocolIDs.CP_CMD,  # ID 91
             ControlValues.ReadWrite,
             cmd.pack(),
             wait,
@@ -418,7 +415,7 @@ class DobotApi(threading.Thread):
         # Param: uint8_t isCtrlEnable (always 1 for set), uint8_t isGripped
         params_payload = bytearray([0x01, (0x01 if enable else 0x00)])
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_GRIPPER,  # ID 63
+            CommunicationProtocolIDs.END_EFFECTOR_GRIPPER,  # ID 63
             ControlValues.ReadWrite,
             params_payload,
             wait,
@@ -451,7 +448,7 @@ class DobotApi(threading.Thread):
         # Param: uint8_t isCtrlEnabled (always 1 for set), uint8_t isSucked
         params_payload = bytearray([0x01, (0x01 if enable else 0x00)])
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_SUCTION_CUP,  # ID 62
+            CommunicationProtocolIDs.END_EFFECTOR_SUCTION_CUP,  # ID 62
             ControlValues.ReadWrite,
             params_payload,
             wait,
@@ -482,7 +479,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_JOINT_PARAMS,  # ID 80
+            CommunicationProtocolIDs.PTP_JOINT_PARAMS,  # ID 80
             ControlValues.ReadWrite,
             params.pack(),
             wait,
@@ -516,7 +513,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_COORDINATE_PARAMS,  # ID 81
+            CommunicationProtocolIDs.PTP_COORDINATE_PARAMS,  # ID 81
             ControlValues.ReadWrite,
             params.pack(),
             wait,
@@ -547,7 +544,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_JUMP_PARAMS,  # ID 82
+            CommunicationProtocolIDs.PTP_JUMP_PARAMS,  # ID 82
             ControlValues.ReadWrite,
             params.pack(),
             wait,
@@ -578,7 +575,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_COMMON_PARAMS,  # ID 83
+            CommunicationProtocolIDs.PTP_COMMON_PARAMS,  # ID 83
             ControlValues.ReadWrite,
             params.pack(),
             wait,
@@ -609,7 +606,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_PTP_CMD,  # ID 84
+            CommunicationProtocolIDs.PTP_CMD,  # ID 84
             ControlValues.ReadWrite,
             cmd.pack(),
             wait,
@@ -633,7 +630,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_QUEUED_CMD_CLEAR,  # ID 245
+            CommunicationProtocolIDs.QUEUED_CMD_CLEAR,  # ID 245
             ControlValues.ReadWrite,  # rw=1, isQueued=0
         )
 
@@ -646,7 +643,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_QUEUED_CMD_START_EXEC,  # ID 240
+            CommunicationProtocolIDs.QUEUED_CMD_START_EXEC,  # ID 240
             ControlValues.ReadWrite,  # rw=1, isQueued=0
         )
 
@@ -666,7 +663,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_WAIT_CMD,  # ID 110
+            CommunicationProtocolIDs.WAIT_CMD,  # ID 110
             ControlValues.ReadWrite,
             params.pack(),
             wait,
@@ -690,7 +687,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_QUEUED_CMD_STOP_EXEC,  # ID 241
+            CommunicationProtocolIDs.QUEUED_CMD_STOP_EXEC,  # ID 241
             ControlValues.ReadWrite,  # rw=1, isQueued=0
         )
 
@@ -704,7 +701,7 @@ class DobotApi(threading.Thread):
         """
         params_payload = bytearray(device_serial_number.encode("utf-8"))
         self._send_command_with_params(
-            CommunicationProtocolIDs.GET_SET_DEVICE_SN,  # ID 0
+            CommunicationProtocolIDs.DEVICE_SN,  # ID 0
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params_payload,
         )
@@ -720,7 +717,7 @@ class DobotApi(threading.Thread):
             Device Serial Number as a string.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_SET_DEVICE_SN,  # ID 0
+            CommunicationProtocolIDs.DEVICE_SN,  # ID 0
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return response.params.decode("utf-8")
@@ -735,7 +732,7 @@ class DobotApi(threading.Thread):
         """
         params_payload = bytearray(device_name.encode("utf-8"))
         self._send_command_with_params(
-            CommunicationProtocolIDs.GET_SET_DEVICE_NAME,  # ID 1
+            CommunicationProtocolIDs.DEVICE_NAME,  # ID 1
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params_payload,
         )
@@ -750,7 +747,7 @@ class DobotApi(threading.Thread):
             Device Name as a string.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_SET_DEVICE_NAME,  # ID 1
+            CommunicationProtocolIDs.DEVICE_NAME,  # ID 1
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return response.params.decode("utf-8")
@@ -764,7 +761,7 @@ class DobotApi(threading.Thread):
             Tuple (Major version, Minor version, Revision version).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_DEVICE_VERSION,  # ID 2
+            CommunicationProtocolIDs.DEVICE_VERSION,  # ID 2
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected format: uint8_t majorVersion, uint8_t minorVersion, uint8_t revision
@@ -782,7 +779,7 @@ class DobotApi(threading.Thread):
             params: Rail version and enable status.
         """
         self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_DEVICE_WITH_RAIL,  # ID 3
+            CommunicationProtocolIDs.DEVICE_WITH_RAIL,  # ID 3
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params.pack(),
         )
@@ -797,7 +794,7 @@ class DobotApi(threading.Thread):
             True if rail enabled/present, False otherwise.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_DEVICE_WITH_RAIL,  # ID 3
+            CommunicationProtocolIDs.DEVICE_WITH_RAIL,  # ID 3
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected format: uint8_t WithL
@@ -817,7 +814,7 @@ class DobotApi(threading.Thread):
             System Tick (uint32_t).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_DEVICE_TIME,  # ID 4
+            CommunicationProtocolIDs.DEVICE_TIME,  # ID 4
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected format: uint32_t Time
@@ -836,7 +833,7 @@ class DobotApi(threading.Thread):
             Device ID as a tuple of 3 uint32_t values.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_DEVICE_ID,  # Assumed ID 5 if GET_DEVICE_TIME is 4
+            CommunicationProtocolIDs.DEVICE_ID,  # Assumed ID 5 if GET_DEVICE_TIME is 4
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected format: uint32_t[3] ID
@@ -897,7 +894,7 @@ class DobotApi(threading.Thread):
         """
 
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_ALARMS_STATE_OR_CLEAR_ALARM,  # ID 20
+            CommunicationProtocolIDs.ALARM_STATE,  # ID 20
             ControlValues.Zero,  # For Get: rw=0, isQueued=0
         )
         # Expected format: uint8_t[16] alarmsState
@@ -926,7 +923,7 @@ class DobotApi(threading.Thread):
         Protocol ID: 20 (rw=1). (Note: PDF Table 29 shows ID 21 for Clear, assuming ID 20 with rw=1)
         """
         self._send_command_with_params(
-            CommunicationProtocolIDs.GET_ALARMS_STATE_OR_CLEAR_ALARM,  # ID 20
+            CommunicationProtocolIDs.ALARM_STATE,  # ID 20
             ControlValues.ReadWrite,  # For Clear: rw=1, isQueued=0
         )
         return None
@@ -947,7 +944,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_HOME_PARAMS,  # ID 30
+            CommunicationProtocolIDs.HOME_PARAMS,  # ID 30
             ControlValues.ReadWrite,
             params.pack(),
             wait,
@@ -971,7 +968,7 @@ class DobotApi(threading.Thread):
             Current homing parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_HOME_PARAMS,  # ID 30
+            CommunicationProtocolIDs.HOME_PARAMS,  # ID 30
             ControlValues.Zero,  # For Get: rw=0, isQueued=0
         )
         return tagHomeParams.unpack(response.params)  #
@@ -992,7 +989,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_HOME_CMD,  # ID 31
+            CommunicationProtocolIDs.HOME_CMD,  # ID 31
             ControlValues.ReadWrite,
             params.pack(),  # HOMECmd
             wait,
@@ -1026,7 +1023,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_AUTO_LEVELING,  # ID 32
+            CommunicationProtocolIDs.AUTO_LEVELING,  # ID 32
             ControlValues.ReadWrite,
             params.pack(),  # AutoLevelingParams
             wait,
@@ -1050,7 +1047,7 @@ class DobotApi(threading.Thread):
             AutoLevelingResult (float, accuracy or status).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_AUTO_LEVELING,  # ID 32
+            CommunicationProtocolIDs.AUTO_LEVELING,  # ID 32
             ControlValues.Zero,  # For Get: rw=0, isQueued=0
         )
         # Expected: float AutoLevelingResult
@@ -1160,7 +1157,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_PARAMS,  # ID 60
+            CommunicationProtocolIDs.END_EFFECTOR_PARAMS,  # ID 60
             ControlValues.ReadWrite,
             params.pack(),  # EndEffectorParams
             wait,
@@ -1184,7 +1181,7 @@ class DobotApi(threading.Thread):
             Current end effector parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_PARAMS,  # ID 60
+            CommunicationProtocolIDs.END_EFFECTOR_PARAMS,  # ID 60
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagEndEffectorParams.unpack(response.params)  #
@@ -1207,7 +1204,7 @@ class DobotApi(threading.Thread):
         """
         params_payload = bytearray([1 if enable_ctrl else 0, 1 if on else 0])
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_LASER,  # ID 61
+            CommunicationProtocolIDs.END_EFFECTOR_LASER,  # ID 61
             ControlValues.ReadWrite,
             params_payload,
             wait,
@@ -1231,7 +1228,7 @@ class DobotApi(threading.Thread):
             Tuple (isCtrlEnabled, isOn).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_LASER,  # ID 61
+            CommunicationProtocolIDs.END_EFFECTOR_LASER,  # ID 61
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected: uint8_t isCtrlEnabled, uint8_t isOn
@@ -1252,7 +1249,7 @@ class DobotApi(threading.Thread):
             Tuple (isCtrlEnabled, isSucked).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_SUCTION_CUP,  # ID 62
+            CommunicationProtocolIDs.END_EFFECTOR_SUCTION_CUP,  # ID 62
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected: uint8_t isCtrlEnable, uint8_t isSucked
@@ -1273,7 +1270,7 @@ class DobotApi(threading.Thread):
             Tuple (isCtrlEnabled, isGripped).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_END_EFFECTOR_GRIPPER,  # ID 63
+            CommunicationProtocolIDs.END_EFFECTOR_GRIPPER,  # ID 63
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected: uint8_t isCtrlEnable, uint8_t isGripped
@@ -1301,7 +1298,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOG_JOINT_PARAMS,  # ID 70
+            CommunicationProtocolIDs.JOG_JOINT_PARAMS,  # ID 70
             ControlValues.ReadWrite,
             params.pack(),  # JOGJointParams
             wait,
@@ -1325,7 +1322,7 @@ class DobotApi(threading.Thread):
             Current JOG joint parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOG_JOINT_PARAMS,  # ID 70
+            CommunicationProtocolIDs.JOG_JOINT_PARAMS,  # ID 70
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagJOGJointParams.unpack(response.params)  #
@@ -1349,7 +1346,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOG_COORDINATE_PARAMS,  # ID 71
+            CommunicationProtocolIDs.JOG_JOINT_PARAMS,  # ID 71
             ControlValues.ReadWrite,
             params.pack(),  # JOGCoordinateParams
             wait,
@@ -1373,7 +1370,7 @@ class DobotApi(threading.Thread):
             Current JOG coordinate parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOG_COORDINATE_PARAMS,  # ID 71
+            CommunicationProtocolIDs.JOG_COORDINATE_PARAMS,  # ID 71
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagJOGCoordinateParams.unpack(response.params)  #
@@ -1394,7 +1391,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOG_COMMON_PARAMS,  # ID 72
+            CommunicationProtocolIDs.JOG_COMMON_PARAMS,  # ID 72
             ControlValues.ReadWrite,
             params.pack(),  # JOGCommonParams
             wait,
@@ -1418,7 +1415,7 @@ class DobotApi(threading.Thread):
             Current common JOG parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOG_COMMON_PARAMS,  # ID 72
+            CommunicationProtocolIDs.JOG_COMMON_PARAMS,  # ID 72
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagJOGCommonParams.unpack(response.params)  #
@@ -1439,7 +1436,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_JOG_CMD,  # ID 73
+            CommunicationProtocolIDs.JOG_CMD,  # ID 73
             ControlValues.ReadWrite,
             cmd.pack(),  # JOGCmd
             wait,
@@ -1470,7 +1467,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOGL_PARAMS,  # ID 74
+            CommunicationProtocolIDs.JOGL_PARAMS,  # ID 74
             ControlValues.ReadWrite,
             params.pack(),  # JOGLParams
             wait,
@@ -1494,7 +1491,7 @@ class DobotApi(threading.Thread):
             Current JOGL parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_JOGL_PARAMS,  # ID 74
+            CommunicationProtocolIDs.JOGL_PARAMS,  # ID 74
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagJOGLParams.unpack(response.params)  #
@@ -1508,7 +1505,7 @@ class DobotApi(threading.Thread):
             Current PTP joint parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_JOINT_PARAMS,  # ID 80
+            CommunicationProtocolIDs.PTP_JOINT_PARAMS,  # ID 80
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagPTPJointParams.unpack(response.params)  # structure, 395 for get table
@@ -1522,7 +1519,7 @@ class DobotApi(threading.Thread):
             Current PTP coordinate parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_COORDINATE_PARAMS,  # ID 81
+            CommunicationProtocolIDs.PTP_COORDINATE_PARAMS,  # ID 81
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagPTPCoordinateParams.unpack(
@@ -1538,7 +1535,7 @@ class DobotApi(threading.Thread):
             Current PTP jump parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_JUMP_PARAMS,  # ID 82
+            CommunicationProtocolIDs.PTP_JUMP_PARAMS,  # ID 82
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagPTPJumpParams.unpack(response.params)  # structure, 403 for get table
@@ -1552,7 +1549,7 @@ class DobotApi(threading.Thread):
             Current PTP common parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_COMMON_PARAMS,  # ID 83
+            CommunicationProtocolIDs.PTP_COMMON_PARAMS,  # ID 83
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagPTPCommonParams.unpack(
@@ -1575,7 +1572,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTPL_PARAMS,  # ID 85
+            CommunicationProtocolIDs.PTPL_PARAMS,  # ID 85
             ControlValues.ReadWrite,
             params.pack(),  # PTPLParams
             wait,
@@ -1599,7 +1596,7 @@ class DobotApi(threading.Thread):
             Current PTPL parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTPL_PARAMS,  # ID 85
+            CommunicationProtocolIDs.PTPL_PARAMS,  # ID 85
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagPTPLParams.unpack(response.params)  #
@@ -1620,7 +1617,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_PTP_WITH_L_CMD,  # ID 86
+            CommunicationProtocolIDs.PTP_WITH_L_CMD,  # ID 86
             ControlValues.ReadWrite,
             cmd.pack(),  # PTPWithLCmd
             wait,
@@ -1651,7 +1648,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_JUMP_TO_PARAMS,  # ID 87
+            CommunicationProtocolIDs.PTP_JUMP_TO_PARAMS,  # ID 87
             ControlValues.ReadWrite,
             params.pack(),  # PTPJump2Params
             wait,
@@ -1675,7 +1672,7 @@ class DobotApi(threading.Thread):
             Current PTP jump2 parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_PTP_JUMP_TO_PARAMS,  # ID 87
+            CommunicationProtocolIDs.PTP_JUMP_TO_PARAMS,  # ID 87
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagPTPJump2Params.unpack(response.params)  #
@@ -1705,7 +1702,7 @@ class DobotApi(threading.Thread):
             params_bytes.extend(po_cmd.pack())  # POCmd
 
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_PTPPO_CMD,  # ID 88
+            CommunicationProtocolIDs.PTPPO_CMD,  # ID 88
             ControlValues.ReadWrite,
             bytes(params_bytes),
             wait,
@@ -1745,7 +1742,7 @@ class DobotApi(threading.Thread):
             params_bytes.extend(po_cmd.pack())  # POCmd
 
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_PTPPO_WITH_L_CMD,  # ID 89
+            CommunicationProtocolIDs.PTPPO_WITH_L_CMD,  # ID 89
             ControlValues.ReadWrite,
             bytes(params_bytes),
             wait,
@@ -1776,7 +1773,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_CP_PARAMS,  # ID 90
+            CommunicationProtocolIDs.CP_PARAMS,  # ID 90
             ControlValues.ReadWrite,
             params.pack(),  # CPParams
             wait,
@@ -1800,7 +1797,7 @@ class DobotApi(threading.Thread):
             Current CP parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_CP_PARAMS,  # ID 90
+            CommunicationProtocolIDs.CP_PARAMS,  # ID 90
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagCPParams.unpack(response.params)  #
@@ -1821,7 +1818,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_CPLE_CMD,  # ID 92
+            CommunicationProtocolIDs.CPLE_CMD,  # ID 92
             ControlValues.ReadWrite,
             cmd.pack(),  # CPCmd
             wait,
@@ -1852,7 +1849,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_ARC_PARAMS,  # ID 100
+            CommunicationProtocolIDs.ARC_PARAMS,  # ID 100
             ControlValues.ReadWrite,
             params.pack(),  # ARCParams
             wait,
@@ -1876,7 +1873,7 @@ class DobotApi(threading.Thread):
             Current ARC parameters.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_ARC_PARAMS,  # ID 100
+            CommunicationProtocolIDs.ARC_PARAMS,  # ID 100
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagARCParams.unpack(response.params)  #
@@ -1897,7 +1894,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_ARC_CMD,  # ID 101
+            CommunicationProtocolIDs.ARC_CMD,  # ID 101
             ControlValues.ReadWrite,
             cmd.pack(),  # ARCCmd
             wait,
@@ -1928,7 +1925,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_TRIG_CMD,  # ID 120
+            CommunicationProtocolIDs.TRIG_CMD,  # ID 120
             ControlValues.ReadWrite,
             cmd.pack(),  # TRIGCmd
             wait,
@@ -1959,7 +1956,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_IO_MULTIPLEXING,  # ID 130
+            CommunicationProtocolIDs.IO_MULTIPLEXING,  # ID 130
             ControlValues.ReadWrite,
             params.pack(),  # IOMultiplexing
             wait,
@@ -2008,7 +2005,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_IODO,  # ID 131
+            CommunicationProtocolIDs.IODO,  # ID 131
             ControlValues.ReadWrite,
             params.pack(),  # IODO
             wait,
@@ -2036,7 +2033,7 @@ class DobotApi(threading.Thread):
             The Level of the DO. Caller should check response address if specific one is needed.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_IODO,  # ID 131
+            CommunicationProtocolIDs.IODO,  # ID 131
             ControlValues.Zero,  # For Get: rw=0, isQueued=0
         )
         # Returns IODO (address, level)
@@ -2063,7 +2060,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_IO_PWM,  # ID 132
+            CommunicationProtocolIDs.IO_PWM,  # ID 132
             ControlValues.ReadWrite,
             params.pack(),  # IOPWM
             wait,
@@ -2093,7 +2090,7 @@ class DobotApi(threading.Thread):
             PWM configuration. Caller should check response address.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_IO_PWM,  # ID 132
+            CommunicationProtocolIDs.IO_PWM,  # ID 132
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Returns IOPWM (address, frequency, dutyCycle)
@@ -2117,7 +2114,7 @@ class DobotApi(threading.Thread):
             The Level of the DI. Caller should check response address.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_IODI,  # ID 133
+            CommunicationProtocolIDs.IODI,  # ID 133
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Returns IODI (address, level) - struct is same as IODO
@@ -2141,7 +2138,7 @@ class DobotApi(threading.Thread):
             ADC value (0-4095). Caller should check response address.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_IO_ADC,  # ID 134
+            CommunicationProtocolIDs.IO_ADC,  # ID 134
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected IOADC struct: {uint8_t address; uint16_t value;}
@@ -2181,7 +2178,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_EMOTOR,  # ID 135
+            CommunicationProtocolIDs.EMOTOR,  # ID 135
             ControlValues.ReadWrite,
             params.pack(),  # EMotor
             wait,
@@ -2212,7 +2209,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_COLOR_SENSOR,  # ID 137
+            CommunicationProtocolIDs.COLOR_SENSOR,  # ID 137
             ControlValues.ReadWrite,
             params.pack(),  # Device ColorSense
             wait,
@@ -2264,7 +2261,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_IR_SWITCH,  # ID 138
+            CommunicationProtocolIDs.IR_SWITCH,  # ID 138
             ControlValues.ReadWrite,
             params.pack(),  # Device IRSense (reusing Device struct)
             wait,
@@ -2317,7 +2314,7 @@ class DobotApi(threading.Thread):
             struct.pack("<ff", rear_arm_angle_error, front_arm_angle_error)
         )
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_ANGLE_SENSOR_STATIC_ERROR,  # ID 140
+            CommunicationProtocolIDs.ANGLE_SENSOR_STATIC_ERROR,  # ID 140
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params_payload,
         )
@@ -2331,7 +2328,7 @@ class DobotApi(threading.Thread):
             Tuple (rear_arm_angle_error, front_arm_angle_error).
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_ANGLE_SENSOR_STATIC_ERROR,  # ID 140
+            CommunicationProtocolIDs.ANGLE_SENSOR_STATIC_ERROR,  # ID 140
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected: float rearArmAngleError, float frontArmAngleError
@@ -2355,7 +2352,7 @@ class DobotApi(threading.Thread):
         """
         params_payload = bytearray([1 if enable else 0])
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_CONFIG_MODE,  # ID 150
+            CommunicationProtocolIDs.WIFI_CONFIG_MODE,  # ID 150
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params_payload,
         )
@@ -2369,7 +2366,7 @@ class DobotApi(threading.Thread):
             True if Wi-Fi config mode enabled, False otherwise.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_CONFIG_MODE,  # ID 150
+            CommunicationProtocolIDs.WIFI_CONFIG_MODE,  # ID 150
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected: uint8_t enable
@@ -2392,7 +2389,7 @@ class DobotApi(threading.Thread):
         """
         params_payload = bytearray(ssid.encode("utf-8"))
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_SSID,  # ID 151
+            CommunicationProtocolIDs.WIFI_SSID,  # ID 151
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params_payload,
         )
@@ -2406,7 +2403,7 @@ class DobotApi(threading.Thread):
             Wi-Fi SSID as string.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_SSID,  # ID 151
+            CommunicationProtocolIDs.WIFI_SSID,  # ID 151
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return response.params.decode("utf-8")  # Returns char[n] ssid
@@ -2424,7 +2421,7 @@ class DobotApi(threading.Thread):
         """
         params_payload = bytearray(password.encode("utf-8"))
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_PASSWORD,  # ID 152
+            CommunicationProtocolIDs.WIFI_PASSWORD,  # ID 152
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params_payload,
         )
@@ -2438,7 +2435,7 @@ class DobotApi(threading.Thread):
             Wi-Fi password as string.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_PASSWORD,  # ID 152
+            CommunicationProtocolIDs.WIFI_PASSWORD,  # ID 152
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return response.params.decode("utf-8")  # Returns char[n] password
@@ -2455,7 +2452,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_IP_ADDRESS,  # ID 153
+            CommunicationProtocolIDs.WIFI_IP_ADDRESS,  # ID 153
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params.pack(),
         )
@@ -2469,7 +2466,7 @@ class DobotApi(threading.Thread):
             WIFIIPAddress structure.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_IP_ADDRESS,  # ID 153
+            CommunicationProtocolIDs.WIFI_IP_ADDRESS,  # ID 153
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagWIFIIPAddress.unpack(response.params)  #
@@ -2486,7 +2483,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_NETMASK,  # ID 154
+            CommunicationProtocolIDs.WIFI_NETMASK,  # ID 154
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params.pack(),
         )
@@ -2500,7 +2497,7 @@ class DobotApi(threading.Thread):
             WIFINetmask structure.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_NETMASK,  # ID 154
+            CommunicationProtocolIDs.WIFI_NETMASK,  # ID 154
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagWIFINetmask.unpack(response.params)  #
@@ -2517,7 +2514,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_GATEWAY,  # ID 155
+            CommunicationProtocolIDs.WIFI_GATEWAY,  # ID 155
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params.pack(),
         )
@@ -2531,7 +2528,7 @@ class DobotApi(threading.Thread):
             WIFIGateway structure.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_GATEWAY,  # ID 155
+            CommunicationProtocolIDs.WIFI_GATEWAY,  # ID 155
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagWIFIGateway.unpack(response.params)  #
@@ -2548,7 +2545,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_DNS,  # ID 156
+            CommunicationProtocolIDs.WIFI_DNS,  # ID 156
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params.pack(),
         )
@@ -2562,7 +2559,7 @@ class DobotApi(threading.Thread):
             WIFIDNS structure.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.SET_GET_WIFI_DNS,  # ID 156
+            CommunicationProtocolIDs.WIFI_DNS,  # ID 156
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         return tagWIFIDNS.unpack(response.params)  #
@@ -2576,7 +2573,7 @@ class DobotApi(threading.Thread):
             True if connected, False otherwise.
         """
         response = self._send_command_with_params(
-            CommunicationProtocolIDs.GET_WIFI_CONNECT_STATUS,  # ID 157
+            CommunicationProtocolIDs.WIFI_CONNECT_STATUS,  # ID 157
             ControlValues.Zero,  # rw=0, isQueued=0
         )
         # Expected: uint8_t isConnected
@@ -2643,7 +2640,7 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_QUEUED_CMD_FORCE_STOP_EXEC,  # ID 242
+            CommunicationProtocolIDs.QUEUED_CMD_FORCE_STOP_EXEC,  # ID 242
             ControlValues.ReadWrite,  # rw=1, isQueued=0
         )
 
@@ -2663,7 +2660,7 @@ class DobotApi(threading.Thread):
         """
         params_payload = bytearray(struct.pack("<II", total_loop, line_per_loop))
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_QUEUED_CMD_START_DOWNLOAD,  # ID 243
+            CommunicationProtocolIDs.QUEUED_CMD_START_DOWNLOAD,  # ID 243
             ControlValues.ReadWrite,  # rw=1, isQueued=0
             params_payload,
         )
@@ -2677,6 +2674,6 @@ class DobotApi(threading.Thread):
             The response message from the Dobot.
         """
         return self._send_command_with_params(
-            CommunicationProtocolIDs.SET_QUEUED_CMD_STOP_DOWNLOAD,  # ID 244
+            CommunicationProtocolIDs.QUEUED_CMD_STOP_DOWNLOAD,  # ID 244
             ControlValues.ReadWrite,  # rw=1, isQueued=0
         )
