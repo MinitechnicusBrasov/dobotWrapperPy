@@ -2183,7 +2183,7 @@ class tagEMOTOR:
     """Represents an EMOTOR command."""
 
     # uint8 - Represents EMotorIndex
-    index: EMotorIndex
+    address: EMotorIndex
     # uint8 - Boolean flag for instruction enabled
     insEnabled: bool
     # double - Speed of the motor
@@ -2204,7 +2204,7 @@ class tagEMOTOR:
         format_string = "<BBd"
         return struct.pack(
             format_string,
-            self.index.value,  # Pack the enum value
+            self.address.value,  # Pack the enum value
             1 if self.insEnabled else 0,  # Pack boolean as 1 or 0
             self.speed,
         )
@@ -2235,7 +2235,7 @@ class tagEMOTOR:
         )
 
         try:
-            index = EMotorIndex(unpacked_byte_index)
+            address = EMotorIndex(unpacked_byte_index)
         except ValueError:
             raise ValueError(
                 f"Invalid EMotorIndex value encountered: {unpacked_byte_index}"
@@ -2245,7 +2245,7 @@ class tagEMOTOR:
         speed = unpacked_double_speed
 
         return cls(
-            index=index,
+            address=address,
             insEnabled=ins_enabled,
             speed=speed,
         )

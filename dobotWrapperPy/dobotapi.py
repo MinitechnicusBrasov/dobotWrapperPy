@@ -9,7 +9,6 @@ from .dobotConnection import DobotConnection
 from .enums.CommunicationProtocolIDs import CommunicationProtocolIDs
 from .enums.ControlValues import ControlValues
 from .enums.HHTTrigMode import HHTTrigMode
-from .enums.ptpMode import PTPMode
 from .enums.alarm import Alarm
 
 # Unused import: tagVersionRail - kept as per original
