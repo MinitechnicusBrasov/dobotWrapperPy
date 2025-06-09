@@ -9,7 +9,7 @@ setuptools.setup(
     packages=["dobotWrapperPy", "dobotWrapperPy.enums"],
     package_data={"dobotWrapperPy": ["py.typed"], "dobotWrapperPy.enums": ["py.typed"]},
     include_package_data=True,
-    version="1.0.1",
+    version="1.1.0",
     description="Python library for Dobot Magician For Minitechnicus Courses",
     long_description=long_description,
     long_description_content_type="text/markdown",
