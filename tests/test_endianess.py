@@ -182,13 +182,14 @@ def test_set_end_effector_gripper_little_endian(
 ) -> None:
     """Test setting gripper status with little-endian boolean parameter."""
     enable = True
+    grip = True
 
     # Mock the response for the SET command (usually contains the command index)
     mock_response_msg = MagicMock(spec=Message)
     mock_response_msg.params = struct.pack("<L", 125)  # Mock a command index response
     mock_send_command.return_value = mock_response_msg
 
-    mock_device.set_end_effector_gripper(enable=enable)
+    mock_device.set_end_effector_gripper(enable, grip)
 
     mock_send_command.assert_called_once()
 
@@ -199,7 +200,7 @@ def test_set_end_effector_gripper_little_endian(
     assert packet_message.ctrl == ControlValues.ReadWrite
 
     # Verify payload structure and endianness
-    expected_params = bytearray([0x01, 0x01 if enable else 0x00])
+    expected_params = bytearray([0x01 if enable else 0x00, 0x01 if grip else 0x00])
 
     assert packet_message.params == expected_params
 
