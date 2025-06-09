@@ -136,7 +136,7 @@ def test_get_queued_cmd_current_index_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.GET_QUEUED_CMD_CURRENT_INDEX
+    assert packet_message.id == CommunicationProtocolIDs.QUEUED_CMD_CURRENT_INDEX
     assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
     assert packet_message.params == bytearray(
         []
@@ -449,7 +449,7 @@ def test_get_device_version_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.GET_DEVICE_VERSION
+    assert packet_message.id == CommunicationProtocolIDs.DEVICE_VERSION
     assert packet_message.ctrl == ControlValues.Zero  # GET command should have Ctrl=0
     assert packet_message.params == bytearray(
         []

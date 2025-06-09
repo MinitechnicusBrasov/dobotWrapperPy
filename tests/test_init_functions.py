@@ -390,7 +390,7 @@ def test_set_queued_cmd_clear_message(
     (packet_message, _), _ = mock_send_command.call_args
     assert isinstance(packet_message, Message)
 
-    assert packet_message.id == CommunicationProtocolIDs.SET_QUEUED_CMD_CLEAR
+    assert packet_message.id == CommunicationProtocolIDs.QUEUED_CMD_CLEAR
     assert packet_message.ctrl == ControlValues.ReadWrite
     assert packet_message.params == bytearray([])  # SET command with no parameters
 
