@@ -213,10 +213,10 @@ def test_set_end_effector_gripper_little_endian(
     )  # Mock a command index response
     mock_send_command.return_value = mock_response_msg_disable
 
-    mock_device.set_end_effector_gripper(enable=False)
+    mock_device.set_end_effector_gripper(False, False)
     mock_send_command.assert_called_once()
     (packet_message_disable, _), _ = mock_send_command.call_args
-    assert packet_message_disable.params == bytearray([0x01, 0x00])
+    assert packet_message_disable.params == bytearray([0x00, 0x00])
 
 
 @patch("dobotWrapperPy.dobotapi.DobotApi._send_command")

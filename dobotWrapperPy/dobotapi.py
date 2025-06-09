@@ -398,7 +398,7 @@ class DobotApi(threading.Thread):
         return None
 
     def set_end_effector_gripper(
-        self, enable: bool = False, wait: bool = False, is_queued: bool = False
+        self, enable: bool = True, grip: bool = False, wait: bool = False, is_queued: bool = False
     ) -> Optional[int]:
         """
         Sets the status of the gripper.
@@ -413,7 +413,7 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         # Param: uint8_t isCtrlEnable (always 1 for set), uint8_t isGripped
-        params_payload = bytearray([0x01, (0x01 if enable else 0x00)])
+        params_payload = bytearray([(0x01 if enable else 0x00), (0x01 if grip else 0x00)])
         response = self._send_command_with_params(
             CommunicationProtocolIDs.END_EFFECTOR_GRIPPER,  # ID 63
             ControlValues.ReadWrite,
