@@ -118,14 +118,14 @@ class DobotGUIApp:
         def create_styled_button_grid(
             parent: tk.Widget,
             text: str,
-            command: Callable[[], None],
+            pressCommand: Callable[[], None],
+            releaseCommand: Callable[[], None],
             width: int,
             height: int,
         ) -> tk.Button:
             btn = tk.Button(
                 parent,
                 text=text,
-                command=command,
                 font=("Inter", 11, "bold"),
                 bg="#007bff",
                 fg="white",
@@ -148,6 +148,8 @@ class DobotGUIApp:
 
             btn.bind("<Enter>", on_enter)
             btn.bind("<Leave>", on_leave)
+            btn.bind("<ButtonPress-1>", lambda event: pressCommand())
+            btn.bind("<ButtonRelease-1>", lambda event: releaseCommand())
             return btn
 
         # Row 0: Z-axis control
@@ -160,15 +162,30 @@ class DobotGUIApp:
             row=0, column=0, columnspan=3
         )  # Spacer
         create_styled_button_grid(
-            joystick_grid_frame, "+Y", self._positive_y, button_width, button_height
+            joystick_grid_frame,
+            "+Y",
+            self._positive_y,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).grid(row=0, column=1, padx=5, pady=5)
 
         # Row 1: X-axis and Y-axis controls
         create_styled_button_grid(
-            joystick_grid_frame, "-X", self._negative_x, button_width, button_height
+            joystick_grid_frame,
+            "-X",
+            self._negative_x,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).grid(row=1, column=0, padx=5, pady=5)
         create_styled_button_grid(
-            joystick_grid_frame, "+X", self._positive_x, button_width, button_height
+            joystick_grid_frame,
+            "+X",
+            self._positive_x,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).grid(row=1, column=2, padx=5, pady=5)
         # Add a blank space in the center of the X-Y-Z cross
         tk.Frame(
@@ -180,7 +197,12 @@ class DobotGUIApp:
 
         # Row 2: Z-axis and R-axis controls
         create_styled_button_grid(
-            joystick_grid_frame, "-Y", self._negative_z, button_width, button_height
+            joystick_grid_frame,
+            "-Y",
+            self._negative_y,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).grid(row=2, column=1, padx=5, pady=5)
 
         # Separate frame for Y and R controls to allow more flexible placement
@@ -190,17 +212,42 @@ class DobotGUIApp:
         )  # Placed to the right of the main cross
 
         create_styled_button_grid(
-            y_r_frame, "+Z", self._positive_z, button_width, button_height
+            y_r_frame,
+            "+Z",
+            self._positive_z,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).pack(pady=5)
         create_styled_button_grid(
-            y_r_frame, "-Z", self._negative_z, button_width, button_height
+            y_r_frame,
+            "-Z",
+            self._negative_z,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).pack(pady=5)
         create_styled_button_grid(
-            y_r_frame, "+R", self._positive_r, button_width, button_height
+            y_r_frame,
+            "+R",
+            self._positive_r,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).pack(pady=5)
         create_styled_button_grid(
-            y_r_frame, "-R", self._negative_r, button_width, button_height
+            y_r_frame,
+            "-R",
+            self._negative_r,
+            self._stop_joystick,
+            button_width,
+            button_height,
         ).pack(pady=5)
+
+        # Schedule initial connection attempt after the GUI is set up
+        # We need to use self.loop.call_soon_threadsafe to schedule this from the main thread
+        # into the asyncio thread.
+        self.loop.call_soon_threadsafe(self._initial_connect_wrapper)
 
     async def _initial_connect(self) -> None:
         """Attempts to connect to Dobot on app startup."""
@@ -221,38 +268,69 @@ class DobotGUIApp:
                 text="Connection: Connected", fg="green"
             )
 
+    def _initial_connect_wrapper(self) -> None:
+        """Wrapper to run _initial_connect as an asyncio task."""
+        asyncio.create_task(self._initial_connect())
+
     def _schedule_dobot_task(self, task_coro: Awaitable[Any], description: str) -> None:
         """
         Helper to schedule an asynchronous Dobot task and update the GUI status.
-        This method is called from the Tkinter thread, so it uses call_soon_threadsafe.
+        This method is called from the Tkinter thread, so it uses call_soon_threadsafe
+        to run the wrapper coroutine in the asyncio loop's thread.
         """
 
         async def wrapper() -> None:
-            self.status_label.config(text=f"{description} started...", fg="blue")
+            # These GUI updates must be scheduled back to the Tkinter thread
+            self.root.after(
+                1,
+                lambda: self.status_label.config(
+                    text=f"{description} started...", fg="blue"
+                ),
+            )
             print(f"Task: {description} started.")
             try:
                 await task_coro
-                self.status_label.config(text=f"{description} completed!", fg="green")
+                self.root.after(
+                    1,
+                    lambda: self.status_label.config(
+                        text=f"{description} completed!", fg="green"
+                    ),
+                )
                 print(f"Task: {description} completed.")
-            except Exception as e:
-                self.status_label.config(text=f"{description} failed: {e}", fg="red")
-                print(f"Error during {description}: {e}")
+            except Exception as err:
+                text = f"{description} failed: {err}"
+                self.root.after(
+                    1, lambda: self.status_label.config(text=text, fg="red")
+                )
+                print(f"Error during {description}: {err}")
             finally:
                 pass  # Color will be reset by next action or stay red if error
 
-        # Schedule the async wrapper to run in the asyncio loop
-        self.loop.call_soon_threadsafe(self.loop.create_task, wrapper())
+        # Schedule the async wrapper to run in the asyncio loop's thread
+        self.loop.call_soon_threadsafe(asyncio.create_task, wrapper())
 
     async def _connect_dobot_task(self) -> bool:
         """Asynchronous task to connect to the Dobot."""
         try:
-            await self.dobot.get_device_id()
-            self.connection_status_label.config(
-                text="Connection: Connected", fg="green"
+            # Assuming get_device_id() is the actual connection attempt
+            # If DobotAsync has a dedicated connect() method, use that.
+            await self.dobot.connect()
+            # Update GUI from the asyncio thread, schedule back to main thread
+            self.root.after(
+                1,
+                lambda: self.connection_status_label.config(
+                    text="Connection: Connected", fg="green"
+                ),
             )
             return True
         except Exception as e:
-            self.connection_status_label.config(text="Connection: Failed", fg="red")
+            # Update GUI from the asyncio thread, schedule back to main thread
+            self.root.after(
+                1,
+                lambda: self.connection_status_label.config(
+                    text="Connection: Failed", fg="red"
+                ),
+            )
             raise e  # Re-raise to be caught by _schedule_dobot_task wrapper
 
     def _connect_dobot_cmd(self) -> None:
@@ -268,9 +346,12 @@ class DobotGUIApp:
 
         async def get_pose_coro() -> None:
             pose_data = await self.dobot.pose()
-            self.status_label.config(
-                text=f"Current Pose: X:{pose_data[0]:.1f}, Y:{pose_data[1]:.1f}, Z:{pose_data[2]:.1f}, R:{pose_data[3]:.1f}",
-                fg="purple",
+            self.root.after(
+                1,
+                lambda: self.status_label.config(
+                    text=f"Current Pose: X:{pose_data[0]:.1f}, Y:{pose_data[1]:.1f}, Z:{pose_data[2]:.1f}, R:{pose_data[3]:.1f}",
+                    fg="purple",
+                ),
             )
 
         self._schedule_dobot_task(get_pose_coro(), "Getting Pose")
@@ -299,6 +380,9 @@ class DobotGUIApp:
     def _negative_r(self) -> None:
         self._schedule_dobot_task(self.dobot.move_joystick_negative_r(), "-R")
 
+    def _stop_joystick(self) -> None:
+        self._schedule_dobot_task(self.dobot.move_joystick_idle(), "Joystick IDLE")
+
 
 class DobotGUIController:
     """
@@ -306,16 +390,17 @@ class DobotGUIController:
     This class acts as the main entry point for the programmer.
     """
 
-    def __init__(self, dobot: DobotAsync, use_async: bool = True):
+    def __init__(self, dobot: DobotAsync):
         self.dobot_async_instance: DobotAsync = dobot
         self.loop: asyncio.AbstractEventLoop | None = None
         self.async_thread: threading.Thread | None = None
         self.root: tk.Tk | None = None
 
-    def _run_async_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+    def _run_async_loop(self) -> None:
         """Runs the asyncio event loop in a separate thread."""
-        asyncio.set_event_loop(loop)
-        loop.run_forever()
+        self.loop = asyncio.new_event_loop()  # Create a new event loop for this thread
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_forever()
 
     def initialize_gui(self) -> None:
         """
@@ -330,34 +415,41 @@ class DobotGUIController:
         # Set up a protocol for when the window is closed
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
-        # Get or create an asyncio event loop for the async thread
-        self.loop = asyncio.new_event_loop()
-
-        # Start the asyncio loop in a separate thread
-        self.async_thread = threading.Thread(
-            target=self._run_async_loop, args=(self.loop,), daemon=True
-        )
+        # Start the asyncio loop in a separate daemon thread
+        # This thread will handle all async operations
+        self.async_thread = threading.Thread(target=self._run_async_loop, daemon=True)
         self.async_thread.start()
 
-        # Create and run the GUI application in the main thread
+        # Wait a small moment to ensure the async loop is running before passing it to DobotGUIApp
+        # This is a bit of a hack, a more robust solution might involve a threading.Event
+        # but for simple cases, a short sleep can suffice.
+        import time
+
+        time.sleep(0.1)  # Give the async thread a moment to start its loop
+
+        # Pass the event loop from the async thread to the GUI app
+        if self.loop is None:
+            raise Exception("Loop is None. Please check implementation")
         DobotGUIApp(self.root, self.loop, self.dobot_async_instance)
-        #
+
         # Start the Tkinter main loop
         self.root.mainloop()
 
         # After Tkinter mainloop exits, ensure asyncio loop is stopped
-        if self.loop.is_running():
+        print("Tkinter mainloop exited. Attempting to stop asyncio loop...")
+        if self.loop and self.loop.is_running():
+            # Schedule the stop method to be called in the async thread
             self.loop.call_soon_threadsafe(self.loop.stop)
         if self.async_thread and self.async_thread.is_alive():
             self.async_thread.join(timeout=5)  # Wait for the thread to finish
+        print("Asyncio loop stopped. Application fully closed.")
 
     def _on_closing(self) -> None:
         """Handles the window closing event."""
         print("Closing Tkinter window. Stopping asyncio loop...")
         if self.loop and self.loop.is_running():
-            self.loop.call_soon_threadsafe(self.loop.stop)
+            self.loop.call_soon_threadsafe(
+                self.loop.stop
+            )  # Schedule stop on the async loop
         if self.root is not None:
             self.root.destroy()
-
-    # Expose DobotAsync methods for direct programmer calls
-    # These methods will be scheduled on the asyncio loop.
