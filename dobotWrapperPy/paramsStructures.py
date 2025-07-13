@@ -2187,7 +2187,7 @@ class tagEMOTOR:
     # uint8 - Boolean flag for instruction enabled
     insEnabled: bool
     # double - Speed of the motor
-    speed: float
+    speed: int
 
     def pack(self) -> bytes:
         """
@@ -2201,7 +2201,7 @@ class tagEMOTOR:
         """
         # Format: < (little-endian), B (uint8), B (uint8), d (double)
         # Total size = 1 + 1 + 8 = 10 bytes
-        format_string = "<BBd"
+        format_string = "<BBi"
         return struct.pack(
             format_string,
             self.address.value,  # Pack the enum value

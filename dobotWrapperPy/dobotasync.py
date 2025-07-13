@@ -64,16 +64,16 @@ class DobotAsync:
         self._loop = asyncio.get_running_loop()
         self.dobotApiInterface.initialize_robot()
 
-    async def _on_sigint(self, signum: int, frame: Optional[Any]) -> None:
+    def _on_sigint(self, signum: int, frame: Optional[Any]) -> None:
         print("SIGINT received. Force Stopping robot...")
         self.force_stop()
         match self._endEffectorType:
             case EndEffectorType.CUP:
-                await self.suck(False)
+                self._run_in_loop(self.suck, False)
             case EndEffectorType.GRIPPER:
-                await self.grip(False, False)
+                self._run_in_loop(self.grip, False, False)
             case EndEffectorType.LASER:
-                await self.laser(False)
+                self._run_in_loop(self.laser, False)
         # Exit the program immediately — no further code runs
         sys.exit(130)  # Standard exit code for Ctrl+C
 
@@ -373,7 +373,7 @@ class DobotAsync:
         await self._run_in_loop(self.dobotApiInterface.set_device_name, name)
 
     async def set_device_rail_capability(
-        self, name: str, enable: bool, version: tagVersionRail
+        self, enable: bool, version: tagVersionRail
     ) -> None:
         await self._run_in_loop(
             self.dobotApiInterface.set_device_rail_capability,
@@ -479,7 +479,7 @@ class DobotAsync:
         result = await self._run_in_loop(self.dobotApiInterface.get_io_pwm, address)
         return (result.frequency, result.dutyCycle)
 
-    async def set_motor(self, address: EMotorIndex, enable: bool, speed: float) -> None:
+    async def set_motor(self, address: EMotorIndex, enable: bool, speed: int) -> None:
         await self._run_in_loop(
             self.dobotApiInterface.set_e_motor,
             tagEMOTOR(address, enable, speed),
