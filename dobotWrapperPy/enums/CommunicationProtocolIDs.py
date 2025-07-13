@@ -1,7 +1,7 @@
-from enum import Enum
+import enum
 
 
-class CommunicationProtocolIDs(Enum):
+class CommunicationProtocolIDs(enum.Enum):
     # INFO
     DEVICE_INFO_BASE = 0
     DEVICE_SN = DEVICE_INFO_BASE + 0

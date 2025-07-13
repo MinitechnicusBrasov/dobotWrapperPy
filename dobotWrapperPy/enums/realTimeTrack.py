@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class RealTimeTrack(Enum):
+class RealTimeTrack(enum.Enum):
     NONREALTIME = 0
     REALTIME = 1

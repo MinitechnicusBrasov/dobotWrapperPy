@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class Level(Enum):
+class Level(enum.Enum):
     LOW = 0
     HIGH = 1

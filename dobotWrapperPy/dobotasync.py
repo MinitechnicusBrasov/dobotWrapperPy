@@ -35,13 +35,14 @@ from .paramsStructures import (
     tagARCCmd,
 )
 import asyncio
-from typing import Tuple, Optional, Set, Any, Callable, Awaitable, TypeVar
-from enum import Enum
+from typing import Tuple, Optional, Set, Callable, TypeVar
+import typing
+import enum
 import signal
 import sys
 
 
-class EndEffectorType(Enum):
+class EndEffectorType(enum.Enum):
     CUP = 0
     GRIPPER = 1
     LASER = 2
@@ -64,7 +65,7 @@ class DobotAsync:
         self._loop = asyncio.get_running_loop()
         self.dobotApiInterface.initialize_robot()
 
-    def _on_sigint(self, signum: int, frame: Optional[Any]) -> None:
+    def _on_sigint(self, signum: int, frame: Optional[typing.Any]) -> None:
         print("SIGINT received. Force Stopping robot...")
         self.force_stop()
         match self._endEffectorType:
@@ -84,7 +85,7 @@ class DobotAsync:
         if hasattr(self, "dobotApiInterface") and self.dobotApiInterface is not None:
             del self.dobotApiInterface
 
-    def _run_in_loop(self, func: Callable[..., _T], *args: Any) -> Awaitable[_T]:
+    def _run_in_loop(self, func: Callable[..., _T], *args: typing.Any) -> typing.Awaitable[_T]:
         if self._loop is None:
             raise Exception("Dobot not connected")
         return self._loop.run_in_executor(None, func, *args)

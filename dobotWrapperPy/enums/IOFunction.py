@@ -1,7 +1,7 @@
-from enum import Enum
+import enum
 
 
-class IOFunction(Enum):
+class IOFunction(enum.Enum):
     DUMMY = 0  # Do not config
     DO = 1  # IO output
     PWM = 2  # PWM Output

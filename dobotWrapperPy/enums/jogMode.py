@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class JogMode(Enum):
+class JogMode(enum.Enum):
     COORDINATE = 0
     JOINT = 1

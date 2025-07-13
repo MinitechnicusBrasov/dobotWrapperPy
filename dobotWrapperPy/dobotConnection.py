@@ -5,7 +5,7 @@ from typing import Optional
 
 class DobotConnection:
 
-    serial_conn: serial.Serial
+    serial_conn: serial.SerialBase
 
     def __init__(
         self, port: Optional[str] = None, serial_conn: Optional[serial.Serial] = None

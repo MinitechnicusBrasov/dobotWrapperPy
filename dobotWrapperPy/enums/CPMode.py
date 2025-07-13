@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class CPMode(Enum):
+class CPMode(enum.Enum):
     RELATIVE = 0
     ABSOLUTE = 1

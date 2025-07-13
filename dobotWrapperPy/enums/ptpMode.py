@@ -1,7 +1,7 @@
-from enum import Enum
+import enum
 
 
-class PTPMode(Enum):
+class PTPMode(enum.Enum):
     """
     1. JUMP_XYZ,
         Jump mode,

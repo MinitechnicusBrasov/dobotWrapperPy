@@ -1,7 +1,7 @@
-from enum import Enum
+import enum
 
 
-class JogCmd(Enum):
+class JogCmd(enum.Enum):
     IDEL = 0  # Void
     AP_DOWN = 1  # X+/Joint1+
     AN_DOWN = 2  # X-/Joint1-

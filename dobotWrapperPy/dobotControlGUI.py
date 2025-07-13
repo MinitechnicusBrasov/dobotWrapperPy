@@ -1,7 +1,8 @@
 from .dobotasync import DobotAsync
 import asyncio
 import tkinter as tk
-from typing import Callable, Awaitable, Any, Dict
+from typing import Callable
+import typing
 import threading
 
 
@@ -76,10 +77,10 @@ class DobotGUIApp:
             btn.pack(side="left", padx=10, pady=5, ipadx=5, ipady=2)
 
             # Explicitly typed event handlers for hover effects
-            def on_enter(event: Any) -> None:
+            def on_enter(event: typing.Any) -> None:
                 btn.config(bg="#0056b3")
 
-            def on_leave(event: Any) -> None:
+            def on_leave(event: typing.Any) -> None:
                 btn.config(bg="#007bff")
 
             btn.bind("<Enter>", on_enter)
@@ -140,10 +141,10 @@ class DobotGUIApp:
             )
 
             # Basic hover effect
-            def on_enter(event: Any) -> None:
+            def on_enter(event: typing.Any) -> None:
                 btn.config(bg="#0056b3")
 
-            def on_leave(event: Any) -> None:
+            def on_leave(event: typing.Any) -> None:
                 btn.config(bg="#007bff")
 
             btn.bind("<Enter>", on_enter)
@@ -272,7 +273,7 @@ class DobotGUIApp:
         """Wrapper to run _initial_connect as an asyncio task."""
         asyncio.create_task(self._initial_connect())
 
-    def _schedule_dobot_task(self, task_coro: Awaitable[Any], description: str) -> None:
+    def _schedule_dobot_task(self, task_coro: typing.Awaitable[typing.Any], description: str) -> None:
         """
         Helper to schedule an asynchronous Dobot task and update the GUI status.
         This method is called from the Tkinter thread, so it uses call_soon_threadsafe

@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class EMotorIndex(Enum):
+class EMotorIndex(enum.Enum):
     STEPPER1 = 0
     STEPPER2 = 1
