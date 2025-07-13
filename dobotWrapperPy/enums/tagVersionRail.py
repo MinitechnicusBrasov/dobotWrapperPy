@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class tagVersionRail(Enum):
+class tagVersionRail(enum.Enum):
     VER_V1 = 0
     VER_V2 = 1

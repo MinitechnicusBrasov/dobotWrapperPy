@@ -1,9 +1,9 @@
 import math
 from typing import Tuple
-from enum import Enum
+import enum
 
 
-class Direction(Enum):
+class Direction(enum.Enum):
     POSITIVE = 1
     NEGATIVE = -1
 

@@ -1,7 +1,7 @@
-from enum import Enum
+import enum
 
 
-class TriggerCondition(Enum):
+class TriggerCondition(enum.Enum):
     LEVEL_EQUAL = 0
     AD_LESS = 0
     LEVEL_UNEQUAL = 1
