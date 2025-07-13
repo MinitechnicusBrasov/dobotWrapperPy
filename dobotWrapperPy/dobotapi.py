@@ -82,7 +82,7 @@ class DobotApi(threading.Thread):
         self.verbose = verbose
         self.lock = threading.Lock()
         self.conn = dobot_connection
-        is_open = self.conn.serial_conn.isOpen()
+        is_open = self.conn.serial_conn.is_open
         if self.verbose:
             print(
                 "dobot: %s open" % self.conn.serial_conn.name
@@ -106,9 +106,8 @@ class DobotApi(threading.Thread):
                     hasattr(self, "conn")
                     and self.conn is not None
                     and hasattr(self.conn, "serial_conn")
-                    and self.conn.serial_conn
-                    is not None  # Ensure serial_conn itself is not None
-                    and hasattr(self.conn.serial_conn, "name")
+                    and self.conn.serial_conn is not None
+                    and self.conn.serial_conn.name is not None
                 ):
                     port_name = self.conn.serial_conn.name
                 print(f"dobot: {port_name} closed")
@@ -261,7 +260,7 @@ class DobotApi(threading.Thread):
         """
         time.sleep(0.05)  # Allow data to arrive
         byte_buffer = self.conn.serial_conn.read_all()
-        if len(byte_buffer) > 0:
+        if byte_buffer is not None and len(byte_buffer) > 0:
             msg = Message(byte_buffer)
             if self.verbose:
                 print("dobot: <<", msg)
