@@ -37,12 +37,12 @@ from .paramsStructures import (
 import asyncio
 from typing import Tuple, Optional, Set, Callable, TypeVar
 import typing
-from enum import Enum
+import enum
 import signal
 import sys
 
 
-class EndEffectorType(Enum):
+class EndEffectorType(enum.Enum):
     CUP = 0
     GRIPPER = 1
     LASER = 2
