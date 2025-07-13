@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class HHTTrigMode(Enum):
+class HHTTrigMode(enum.Enum):
     TriggeredOnKeyRelease = 0x0
     TriggeredOnPeriodicInterval = 0x1

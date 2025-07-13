@@ -1,8 +1,8 @@
-from enum import Enum
 import struct
+import enum
 
 
-class Alarm(Enum):
+class Alarm(enum.Enum):
     COMMON_RESETTING = 0x00
     COMMON_UNDEFINED_INSTRUCTION = 0x01
     COMMON_FILE_SYSTEM = 0x02
