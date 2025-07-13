@@ -43,7 +43,7 @@ jobs:
         # This makes it importable for stubgen/stubtest
         # Adjust 'dobotWrapperPy' to the actual name of your package directory
         if [ -d dobotWrapperPy ]; then # Check if the directory exists
-            pip install -e dobotWrapperPy
+            pip install -e .
         fi
 
         # Generate stubs if they are not committed, or if you want to regenerate them
