@@ -1,4 +1,3 @@
-# mypy: disable-error-code="import"
 import struct
 import threading
 import time
@@ -11,8 +10,6 @@ from .enums.ControlValues import ControlValues
 from .enums.HHTTrigMode import HHTTrigMode
 from .enums.alarm import Alarm
 
-# Unused import: tagVersionRail - kept as per original
-# from .enums.tagVersionRail import tagVersionRail
 from .message import Message
 from .paramsStructures import (
     tagAutoLevelingParams,
@@ -105,7 +102,6 @@ class DobotApi(threading.Thread):
                 del self.conn
             if self.verbose:
                 port_name = "serial port"
-                # Check if self.conn and its attributes still exist before trying to access them
                 if (
                     hasattr(self, "conn")
                     and self.conn is not None
@@ -124,7 +120,7 @@ class DobotApi(threading.Thread):
         Destructor that ensures the connection is closed when the object is
         deleted.
         """
-        if self._on:  # Ensure close is only called if not already explicitly closed
+        if self._on:
             self.close()
 
     def initialize_robot(self) -> None:
@@ -135,17 +131,19 @@ class DobotApi(threading.Thread):
         """
         self.set_queued_cmd_start_exec()
         self.set_queued_cmd_clear()
-        # These parameter settings were implicitly queued in the original code by using ControlValues.Both.
-        # To maintain that behavior, is_queued=True is now explicitly passed.
         self.set_ptp_joint_params(
             tagPTPJointParams(
-                velocity=[200, 200, 200, 200], acceleration=[200, 200, 200, 200]
+                velocity=[200, 200, 200, 200],
+                acceleration=[200, 200, 200, 200],
             ),
             is_queued=True,
         )
         self.set_ptp_coordinate_params(
             tagPTPCoordinateParams(
-                xyzVelocity=200, rVelocity=200, xyzAcceleration=200, rAcceleration=200
+                xyzVelocity=200,
+                rVelocity=200,
+                xyzAcceleration=200,
+                rAcceleration=200,
             ),
             is_queued=True,
         )
@@ -153,7 +151,8 @@ class DobotApi(threading.Thread):
             tagPTPJumpParams(jumpHeight=10, zLimit=200), is_queued=True
         )
         self.set_ptp_common_params(
-            tagPTPCommonParams(velocityRatio=100, accelerationRatio=100), is_queued=True
+            tagPTPCommonParams(velocityRatio=100, accelerationRatio=100),
+            is_queued=True,
         )
         self.get_pose()
 
@@ -170,7 +169,8 @@ class DobotApi(threading.Thread):
 
         Args:
             command_id: The ID of the command.
-            control_value: The base control value (e.g., ReadWrite for set, Zero for get).
+            control_value: The base control value (e.g., ReadWrite for set,
+            Zero for get).
             params: Optional byte string of parameters.
             wait: If True and command is queued, waits for execution.
             put_on_queue: If True, command is added to Dobot's queue.
@@ -190,9 +190,9 @@ class DobotApi(threading.Thread):
             msg.ctrl = control_value  # Immediate command
 
         if params is not None:
-            msg.params = bytearray(params)
+            msg.params = params
         else:
-            msg.params = bytearray([])
+            msg.params = bytes(bytearray([]))
 
         if self.verbose:
             print(f"dobot: sending from {command_id.name}: {msg}")
@@ -217,7 +217,7 @@ class DobotApi(threading.Thread):
                 + f" Params: {response.params.hex()}"
             )
             raise ValueError(
-                "Invalid response for GetQueuedCmdCurrentIndex: insufficient data"
+                "Invalid response for GetQueuedCmdCurrentIndex: " "insufficient data"
             )
         idx = struct.unpack_from("<Q", response.params, 0)[0]
         return int(idx)
@@ -237,7 +237,8 @@ class DobotApi(threading.Thread):
 
         if self.verbose:
             print(
-                "dobot: x:%03.1f y:%03.1f z:%03.1f r:%03.1f j1:%03.1f j2:%03.1f j3:%03.1f j4:%03.1f"
+                "dobot: x:%03.1f y:%03.1f z:%03.1f r:%03.1f "
+                "j1:%03.1f j2:%03.1f j3:%03.1f j4:%03.1f"
                 % (
                     unpacked_response.x,
                     unpacked_response.y,
@@ -269,7 +270,8 @@ class DobotApi(threading.Thread):
 
     def _send_command(self, msg: Message, wait: bool = False) -> Message:
         """
-        Sends a message to the Dobot and optionally waits for its execution if queued.
+        Sends a message to the Dobot and
+        optionally waits for its execution if queued.
 
         Args:
             msg: The message object to send. msg.ctrl indicates if queued.
@@ -280,7 +282,8 @@ class DobotApi(threading.Thread):
 
         Raises:
             TypeError: If no response is received.
-            ValueError: If waiting for a queued command and response is malformed.
+            ValueError: If waiting for a queued command
+            and response is malformed.
         """
         self.lock.acquire()
         try:
@@ -297,10 +300,11 @@ class DobotApi(threading.Thread):
 
         if response is None:
             raise TypeError(
-                f"No response from Dobot. Sent msg ID {msg.id.name if msg.id else 'N/A'}, ctrl {msg.ctrl}"
+                "No response from Dobot. "
+                f"Sent msg ID {msg.id.name if msg.id else 'N/A'},"
+                f" ctrl {msg.ctrl}"
             )
 
-        # Check if the command sent was intended to be queued (isQueued bit is set)
         is_command_queued_by_sender = (
             msg.ctrl.value & ControlValues.isQueued.value
         ) != 0
@@ -308,7 +312,6 @@ class DobotApi(threading.Thread):
         if not wait or not is_command_queued_by_sender:
             return response
 
-        # If wait=True and command was queued, response.params should contain queuedCmdIndex (uint64_t)
         if not response.params or len(response.params) < 8:
             warnings.warn(
                 f"Command {msg.id.name} was queued (wait=True), but response.params "
@@ -323,15 +326,16 @@ class DobotApi(threading.Thread):
                 f"dobot: waiting for command index {expected_idx} (sent {msg.id.name})"
             )
 
-        wait_timeout_seconds = 10  # Max time to wait for a single command execution
-        start_wait_time = time.time()
+        # wait_timeout_seconds = 10  # Max time to wait
+        # start_wait_time = time.time()
 
         while True:
-            if time.time() - start_wait_time > wait_timeout_seconds:
-                warnings.warn(
-                    f"Timeout waiting for command index {expected_idx} ({msg.id.name}) to execute."
-                )
-                break
+            # if time.time() - start_wait_time > wait_timeout_seconds:
+            #     warnings.warn(
+            #         f"Timeout waiting for command index "
+            #         f"{expected_idx} ({msg.id.name}) to execute."
+            #     )
+            #     break
 
             try:
                 current_idx = self.get_queued_cmd_current_index()
@@ -398,14 +402,19 @@ class DobotApi(threading.Thread):
         return None
 
     def set_end_effector_gripper(
-        self, enable: bool = True, grip: bool = False, wait: bool = False, is_queued: bool = False
+        self,
+        enable: bool = True,
+        grip: bool = False,
+        wait: bool = False,
+        is_queued: bool = False,
     ) -> Optional[int]:
         """
         Sets the status of the gripper.
         Protocol ID: 63. Can be queued.
 
         Args:
-            enable: True to enable (grip), False to disable (release).
+            enable: True to enable the functionality, False to disable.
+            grip: True to enable (grip), False to disable (release).
             wait: If True and command is queued, waits for execution.
             is_queued: If True, command is added to the queue.
 
@@ -413,11 +422,13 @@ class DobotApi(threading.Thread):
             Queued command index if is_queued is True, else None.
         """
         # Param: uint8_t isCtrlEnable (always 1 for set), uint8_t isGripped
-        params_payload = bytearray([(0x01 if enable else 0x00), (0x01 if grip else 0x00)])
+        params_payload = bytearray(
+            [(0x01 if enable else 0x00), (0x01 if grip else 0x00)]
+        )
         response = self._send_command_with_params(
             CommunicationProtocolIDs.END_EFFECTOR_GRIPPER,  # ID 63
             ControlValues.ReadWrite,
-            params_payload,
+            bytes(params_payload),
             wait,
             put_on_queue=is_queued,
         )
@@ -450,7 +461,7 @@ class DobotApi(threading.Thread):
         response = self._send_command_with_params(
             CommunicationProtocolIDs.END_EFFECTOR_SUCTION_CUP,  # ID 62
             ControlValues.ReadWrite,
-            params_payload,
+            bytes(params_payload),
             wait,
             put_on_queue=is_queued,
         )
@@ -703,7 +714,7 @@ class DobotApi(threading.Thread):
         self._send_command_with_params(
             CommunicationProtocolIDs.DEVICE_SN,  # ID 0
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
         # Set operations usually don't return specific data beyond ACK, handled by _send_command.
         return None
@@ -734,7 +745,7 @@ class DobotApi(threading.Thread):
         self._send_command_with_params(
             CommunicationProtocolIDs.DEVICE_NAME,  # ID 1
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
         return None
 
@@ -860,7 +871,7 @@ class DobotApi(threading.Thread):
         self._send_command_with_params(
             CommunicationProtocolIDs.RESET_POSE,  # ID 11
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
         return None
 
@@ -1068,7 +1079,7 @@ class DobotApi(threading.Thread):
         self._send_command_with_params(
             CommunicationProtocolIDs.SET_GET_HHTTRIG_MODE,  # ID 40
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
 
     def get_hht_trig_mode(self) -> HHTTrigMode:
@@ -1101,7 +1112,7 @@ class DobotApi(threading.Thread):
         self._send_command_with_params(
             CommunicationProtocolIDs.SET_GET_HHTTRIG_OUTPUT_ENABLED,  # ID 41
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
         return None
 
@@ -1206,7 +1217,7 @@ class DobotApi(threading.Thread):
         response = self._send_command_with_params(
             CommunicationProtocolIDs.END_EFFECTOR_LASER,  # ID 61
             ControlValues.ReadWrite,
-            params_payload,
+            bytes(params_payload),
             wait,
             put_on_queue=is_queued,
         )
@@ -2113,9 +2124,12 @@ class DobotApi(threading.Thread):
         Returns:
             The Level of the DI. Caller should check response address.
         """
+        address_format = "<B"
+        params = struct.pack(address_format, address)
         response = self._send_command_with_params(
             CommunicationProtocolIDs.IODI,  # ID 133
             ControlValues.Zero,  # rw=0, isQueued=0
+            params,
         )
         # Returns IODI (address, level) - struct is same as IODO
         unpacked_response = tagIODO.unpack(response.params)
@@ -2316,7 +2330,7 @@ class DobotApi(threading.Thread):
         return self._send_command_with_params(
             CommunicationProtocolIDs.ANGLE_SENSOR_STATIC_ERROR,  # ID 140
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
 
     def get_angle_sensor_static_error(self) -> Tuple[float, float]:
@@ -2354,7 +2368,7 @@ class DobotApi(threading.Thread):
         return self._send_command_with_params(
             CommunicationProtocolIDs.WIFI_CONFIG_MODE,  # ID 150
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
 
     def get_wifi_config_mode(self) -> bool:
@@ -2391,7 +2405,7 @@ class DobotApi(threading.Thread):
         return self._send_command_with_params(
             CommunicationProtocolIDs.WIFI_SSID,  # ID 151
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
 
     def get_wifi_ssid(self) -> str:
@@ -2423,7 +2437,7 @@ class DobotApi(threading.Thread):
         return self._send_command_with_params(
             CommunicationProtocolIDs.WIFI_PASSWORD,  # ID 152
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
 
     def get_wifi_password(self) -> str:
@@ -2598,7 +2612,7 @@ class DobotApi(threading.Thread):
         return self._send_command_with_params(
             CommunicationProtocolIDs.SET_LOST_STEP_PARAMS,  # ID 170
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
 
     def set_lost_step_cmd(
@@ -2648,7 +2662,8 @@ class DobotApi(threading.Thread):
         self, total_loop: int, line_per_loop: int
     ) -> Message:
         """
-        Starts downloading commands to queue for offline execution. Immediate command.
+        Starts downloading commands to queue for offline execution.
+        Immediate command.
         Protocol ID: 243.
 
         Args:
@@ -2658,11 +2673,13 @@ class DobotApi(threading.Thread):
         Returns:
             The response message from the Dobot.
         """
-        params_payload = bytearray(struct.pack("<II", total_loop, line_per_loop))
+        params_payload = bytearray(
+            struct.pack("<II", total_loop, line_per_loop),
+        )
         return self._send_command_with_params(
             CommunicationProtocolIDs.QUEUED_CMD_START_DOWNLOAD,  # ID 243
             ControlValues.ReadWrite,  # rw=1, isQueued=0
-            params_payload,
+            bytes(params_payload),
         )
 
     def set_queued_cmd_stop_download(self) -> Message:
