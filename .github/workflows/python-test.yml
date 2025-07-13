@@ -36,27 +36,16 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Generate and Test Stubs (stubtest)
       run: |
-        # Assuming your main package is named 'dobotWrapperPy'
-        # And you want to generate stubs into a 'stubs' directory at the root of your repo
-
-        # Optional: Install your project in editable mode if it's a local package
-        # This makes it importable for stubgen/stubtest
-        # Adjust 'dobotWrapperPy' to the actual name of your package directory
         if [ -d dobotWrapperPy ]; then # Check if the directory exists
             pip install -e .
         fi
 
-        # Generate stubs if they are not committed, or if you want to regenerate them
-        # This creates stubs/dobotWrapperPy/__init__.pyi, stubs/dobotWrapperPy/paramsStructures.pyi, etc.
-        # You might need to adjust 'dobotWrapperPy' to your actual package name.
+
+        mkdir -p stubs/
+
         stubgen -p dobotWrapperPy -o stubs/
 
-        # Run stubtest to check consistency
-        # You need to tell stubtest where to find your custom stubs.
-        # This typically involves creating a mypy.ini file or using --custom-typeshed-dir.
-        # For simplicity, let's assume a mypy.ini for configuration.
-
-        stubtest dobotWrapperPy --mypy-config mypy.ini
+        stubtest dobotWrapperPy
 
     - name: Test with pytest
       run: |
