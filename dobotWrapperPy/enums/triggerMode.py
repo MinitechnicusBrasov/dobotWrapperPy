@@ -1,6 +1,6 @@
-from enum import Enum
+import enum
 
 
-class TriggerMode(Enum):
+class TriggerMode(enum.Enum):
     LEVEL = 0
     AD = 1
