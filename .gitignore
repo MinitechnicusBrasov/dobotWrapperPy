@@ -175,3 +175,5 @@ cython_debug/
 
 py_env
 test_docs
+
+stubs/
