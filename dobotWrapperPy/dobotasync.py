@@ -502,14 +502,14 @@ class DobotAsync:
         )
 
     async def move_conveyor_belt(
-        self, speed: float, distance_cm: int, address: EMotorIndex, direction: int = 1
+        self, speed: int, distance_cm: int, address: EMotorIndex, direction: int = 1
     ) -> None:
 
         STEP_PER_CIRCLE = 360.0 / 1.8 * 10.0 * 16.0
         MM_PER_CIRCLE = 3.1415926535898 * 36.0
         if 0.0 <= speed <= 100.0 and (direction == 1 or direction == -1):
             motor_speed = speed * STEP_PER_CIRCLE / MM_PER_CIRCLE * direction
-            await self.set_motor_distance(address, True, speed, distance_cm)
+            await self.set_motor_distance(address, True, motor_speed, distance_cm)
         else:
             raise Exception(
                 f"Wrong speed or direction. Current params: Speed: {speed}, Distance: {distance_cm} cm, Direction: {direction}, Address: {address.value}"
