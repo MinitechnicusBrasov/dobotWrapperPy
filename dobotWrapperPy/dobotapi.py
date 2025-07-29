@@ -21,6 +21,7 @@ from .paramsStructures import (
     tagCPParams,
     tagDevice,
     tagEMOTOR,
+    tagEMOTORDistance,
     tagEndEffectorParams,
     tagIODO,
     tagIOMultiplexing,
@@ -2177,6 +2178,37 @@ class DobotApi(threading.Thread):
 
     def set_e_motor(
         self, params: tagEMOTOR, wait: bool = False, is_queued: bool = False
+    ) -> Optional[int]:
+        """
+        Controls an external motor (stepper).
+        Protocol ID: 135. Can be queued.
+
+        Args:
+            params: External motor parameters.
+            wait: If True and command is queued, waits for execution.
+            is_queued: If True, command is added to the queue.
+
+        Returns:
+            Queued command index if is_queued is True, else None.
+        """
+        response = self._send_command_with_params(
+            CommunicationProtocolIDs.EMOTOR,  # ID 135
+            ControlValues.ReadWrite,
+            params.pack(),  # EMotor
+            wait,
+            put_on_queue=is_queued,
+        )
+        if is_queued:
+            if response.params and len(response.params) >= 8:
+                return int(struct.unpack("<Q", response.params)[0])  #
+            warnings.warn(
+                f"SET_EMOTOR queued but no valid index returned. Params: {response.params.hex()}"
+            )
+            return None
+        return None
+
+    def set_e_motor_distance(
+        self, params: tagEMOTORDistance, wait: bool = False, is_queued: bool = False
     ) -> Optional[int]:
         """
         Controls an external motor (stepper).

@@ -1,4 +1,5 @@
 from .dobotapi import DobotApi
+import math
 from .dobotConnection import DobotConnection
 import warnings
 import struct
@@ -17,6 +18,7 @@ from .message import Message
 from .paramsStructures import (
     tagIOMultiplexing,
     tagWithL,
+    tagEMOTORDistance,
     tagDevice,
     tagPTPCommonParams,
     tagPTPCoordinateParams,
@@ -85,7 +87,9 @@ class DobotAsync:
         if hasattr(self, "dobotApiInterface") and self.dobotApiInterface is not None:
             del self.dobotApiInterface
 
-    def _run_in_loop(self, func: Callable[..., _T], *args: typing.Any) -> typing.Awaitable[_T]:
+    def _run_in_loop(
+        self, func: Callable[..., _T], *args: typing.Any
+    ) -> typing.Awaitable[_T]:
         if self._loop is None:
             raise Exception("Dobot not connected")
         return self._loop.run_in_executor(None, func, *args)
@@ -487,6 +491,32 @@ class DobotAsync:
             True,
             True,
         )
+
+    async def set_motor_distance(
+        self, address: EMotorIndex, enable: bool, speed: int, distance: int
+    ) -> None:
+        await self._run_in_loop(
+            self.dobotApiInterface.set_e_motor_distance,
+            tagEMOTORDistance(address, enable, speed, distance),
+            True,
+            True,
+        )
+
+    async def move_conveyor_belt(
+        self, speed: int, distance_cm: int, address: EMotorIndex, direction: int = 1
+    ) -> None:
+
+        STEP_PER_CIRCLE = 360.0 / 1.8 * 10.0 * 16.0
+        MM_PER_CIRCLE = 3.1415926535898 * 36.0
+        if 0.0 <= speed <= 100.0 and (direction == 1 or direction == -1):
+            motor_speed = math.floor(
+                speed * STEP_PER_CIRCLE / MM_PER_CIRCLE * direction
+            )
+            await self.set_motor_distance(address, True, motor_speed, distance_cm)
+        else:
+            raise Exception(
+                f"Wrong speed or direction. Current params: Speed: {speed}, Distance: {distance_cm} cm, Direction: {direction}, Address: {address.value}"
+            )
 
     async def set_color_sensor(
         self, enable: bool, port: int, version: TagVersionColorSensorAndIR
