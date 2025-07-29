@@ -2252,6 +2252,86 @@ class tagEMOTOR:
 
 
 @dataclass
+class tagEMOTORDistance:
+    """Represents an EMOTOR distance command."""
+
+    # uint8 - Represents EMotorIndex
+    address: EMotorIndex
+    # uint8 - Boolean flag for instruction enabled
+    insEnabled: bool
+    # double - Speed of the motor
+    speed: int
+    # int - Distance travelled
+    distance: int
+
+    def pack(self) -> bytes:
+        """
+        Packs the tagEMOTOR object into a bytes sequence.
+
+        Packs the index (EMotorIndex value as uint8), insEnabled (boolean as uint8),
+        and speed (double) into a byte string. Uses little-endian byte order.
+
+        Returns:
+            A bytes object representing the packed data (1 + 1 + 8 = 10 bytes).
+        """
+        # Format: < (little-endian), B (uint8), B (uint8), d (double)
+        # Total size = 1 + 1 + 8 = 10 bytes
+        format_string = "<BBiI"
+        return struct.pack(
+            format_string,
+            self.address.value,  # Pack the enum value
+            1 if self.insEnabled else 0,  # Pack boolean as 1 or 0
+            self.speed,
+        )
+
+    @classmethod
+    def unpack(cls, data: bytes) -> "tagEMOTORDistance":
+        """
+        Unpacks a bytes sequence into a tagEMOTOR object.
+
+        Args:
+            data: The bytes to unpack, expected to be 10 bytes (2 uint8s + 1 double).
+
+        Returns:
+            A tagEMOTOR object.
+
+        Raises:
+            struct.error: If the input bytes are not the expected size (10 bytes).
+            ValueError: If the unpacked byte value for index does not correspond to a valid EMotorIndex enum member.
+        """
+        format_string = "<BBiI"
+        expected_size = struct.calcsize(format_string)
+
+        if len(data) != expected_size:
+            raise struct.error(f"Expected {expected_size} bytes, but got {len(data)}")
+
+        (
+            unpacked_byte_index,
+            unpacked_byte_ins_enabled,
+            unpacked_double_speed,
+            unpacked_distance,
+        ) = struct.unpack(format_string, data)
+
+        try:
+            address = EMotorIndex(unpacked_byte_index)
+        except ValueError:
+            raise ValueError(
+                f"Invalid EMotorIndex value encountered: {unpacked_byte_index}"
+            )
+
+        ins_enabled = unpacked_byte_ins_enabled == 1
+        speed = unpacked_double_speed
+        distance = unpacked_distance
+
+        return cls(
+            address=address,
+            insEnabled=ins_enabled,
+            speed=speed,
+            distance=distance,
+        )
+
+
+@dataclass
 class tagDevice:
     """Represents a generic device tag."""
 
